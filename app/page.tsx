@@ -341,30 +341,35 @@ export default function TaskManager() {
               className={`nav-item ${activeNavItem === 'addTaskNav' ? 'active' : ''}`}
               onClick={() => handleNavClick('addTaskNav')}
             >
+              <span className="nav-icon">➕</span>
               <span>{t('addTask')}</span>
             </div>
             <div
               className={`nav-item ${activeNavItem === 'searchNav' ? 'active' : ''}`}
               onClick={() => handleNavClick('searchNav')}
             >
+              <span className="nav-icon">🔍</span>
               <span>{t('search')}</span>
             </div>
             <div
               className={`nav-item ${activeNavItem === 'todayNav' ? 'active' : ''}`}
               onClick={() => handleNavClick('todayNav')}
             >
+              <span className="nav-icon">📅</span>
               <span>{t('today')}</span>
             </div>
             <div
               className={`nav-item ${activeNavItem === 'upcomingNav' ? 'active' : ''}`}
               onClick={() => handleNavClick('upcomingNav')}
             >
+              <span className="nav-icon">🔮</span>
               <span>{t('upcoming')}</span>
             </div>
             <div
               className={`nav-item ${activeNavItem === 'completedNav' ? 'active' : ''}`}
               onClick={() => handleNavClick('completedNav')}
             >
+              <span className="nav-icon">✅</span>
               <span>{t('completed')}</span>
             </div>
           </nav>
@@ -417,7 +422,7 @@ export default function TaskManager() {
                         onClick={() => handleProjectClick(project)}
                       >
                         <span style={{ marginRight: '8px', fontSize: '12px' }}>
-                          {project.isOpen ? '📂' : '📁'}
+                          {project.isOpen ? '📂' : '🗂️'}
                         </span>
                         <span className="project-name">{project.name}</span>
                       </div>
