@@ -30,6 +30,7 @@ export default function TaskManager() {
       priority: 'high' | 'medium' | 'low';
       completed: boolean;
       createdAt: string;
+      dueDate?: string;
     }>
   >([]);
   const [projectTasks, setProjectTasks] = useState<
@@ -40,6 +41,7 @@ export default function TaskManager() {
       completed: boolean;
       createdAt: string;
       projectId: number;
+      dueDate?: string;
     }>
   >([]);
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
@@ -236,7 +238,8 @@ export default function TaskManager() {
 
   const handleAddTask = (
     taskName: string,
-    priority: 'high' | 'medium' | 'low'
+    priority: 'high' | 'medium' | 'low',
+    dueDate?: Date | null
   ) => {
     const newTask = {
       id: Date.now(),
@@ -244,6 +247,7 @@ export default function TaskManager() {
       priority: priority,
       completed: false,
       createdAt: new Date().toISOString(),
+      dueDate: dueDate ? dueDate.toISOString() : undefined,
     };
     setTasks([...tasks, newTask]);
   };
@@ -251,7 +255,8 @@ export default function TaskManager() {
   const handleAddProjectTask = (
     projectId: number,
     taskName: string,
-    priority: 'high' | 'medium' | 'low'
+    priority: 'high' | 'medium' | 'low',
+    dueDate?: Date | null
   ) => {
     const newProjectTask = {
       id: Date.now(),
@@ -260,6 +265,7 @@ export default function TaskManager() {
       completed: false,
       createdAt: new Date().toISOString(),
       projectId: projectId,
+      dueDate: dueDate ? dueDate.toISOString() : undefined,
     };
     setProjectTasks([...projectTasks, newProjectTask]);
   };

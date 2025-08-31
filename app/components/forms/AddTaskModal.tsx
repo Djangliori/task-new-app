@@ -1,11 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { DatePicker } from '../ui/DatePicker';
 
 interface AddTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (taskName: string, priority: 'high' | 'medium' | 'low') => void;
+  onSubmit: (taskName: string, priority: 'high' | 'medium' | 'low', dueDate?: Date | null) => void;
   currentLanguage: 'ka' | 'en';
 }
 
@@ -17,6 +18,7 @@ export function AddTaskModal({
 }: AddTaskModalProps) {
   const [taskName, setTaskName] = useState('');
   const [priority, setPriority] = useState<'high' | 'medium' | 'low'>('medium');
+  const [dueDate, setDueDate] = useState<Date | null>(null);
 
   if (!isOpen) return null;
 
@@ -29,6 +31,7 @@ export function AddTaskModal({
       high: 'მაღალი',
       medium: 'საშუალო',
       low: 'დაბალი',
+      dueDate: 'დამთავრების თარიღი:',
       create: 'შექმნა',
       cancel: 'გაუქმება',
     },
@@ -40,6 +43,7 @@ export function AddTaskModal({
       high: 'High',
       medium: 'Medium',
       low: 'Low',
+      dueDate: 'Due Date:',
       create: 'Create',
       cancel: 'Cancel',
     },
@@ -51,9 +55,10 @@ export function AddTaskModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (taskName.trim()) {
-      onSubmit(taskName.trim(), priority);
+      onSubmit(taskName.trim(), priority, dueDate);
       setTaskName('');
       setPriority('medium');
+      setDueDate(null);
       onClose();
     }
   };
@@ -210,6 +215,15 @@ export function AddTaskModal({
                 </button>
               ))}
             </div>
+          </div>
+
+          <div style={{ marginBottom: '25px' }}>
+            <DatePicker
+              value={dueDate}
+              onChange={setDueDate}
+              currentLanguage={currentLanguage}
+              label={t('dueDate')}
+            />
           </div>
 
           <div

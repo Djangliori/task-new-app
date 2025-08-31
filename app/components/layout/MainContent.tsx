@@ -12,6 +12,7 @@ interface Task {
   priority: 'high' | 'medium' | 'low';
   completed: boolean;
   createdAt: string;
+  dueDate?: string;
 }
 
 interface ProjectTask {
@@ -21,6 +22,7 @@ interface ProjectTask {
   completed: boolean;
   createdAt: string;
   projectId: number;
+  dueDate?: string;
 }
 
 interface MainContentProps {
@@ -32,7 +34,8 @@ interface MainContentProps {
   onAddProjectTask: (
     projectId: number,
     taskName: string,
-    priority: 'high' | 'medium' | 'low'
+    priority: 'high' | 'medium' | 'low',
+    dueDate?: Date | null
   ) => void;
   onEditTask: (
     taskId: number,
@@ -191,20 +194,69 @@ export function MainContent({
         );
 
       case 'todayNav':
+        const today = new Date();
+        const todayTasks = tasks.filter(task => {
+          const taskDate = task.dueDate ? new Date(task.dueDate) : new Date(task.createdAt);
+          return taskDate.toDateString() === today.toDateString();
+        });
+        
         return (
-          <div style={{ padding: '20px' }}>
-            <TaskCalendar
-              tasks={tasks}
-              projectTasks={projectTasks}
-              onDateSelect={(date) => {
-                console.log('Selected date:', date);
+          <div className="welcome-card">
+            <h2
+              style={{
+                color: '#2c3e50',
+                fontSize: '24px',
+                fontFamily: 'system-ui, -apple-system, sans-serif',
+                textAlign: 'center',
+                marginBottom: '24px'
               }}
-              onAddTask={(date) => {
-                console.log('Add task for date:', date);
-                // TODO: Open add task modal with selected date
-              }}
-              currentLanguage={currentLanguage}
-            />
+            >
+              {currentLanguage === 'ka'
+                ? 'დღევანდელი დავალებები'
+                : "Today's Tasks"}
+            </h2>
+            
+            {todayTasks.length > 0 ? (
+              <div style={{ textAlign: 'left' }}>
+                {todayTasks.map((task) => (
+                  <div
+                    key={task.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '12px 0',
+                      borderBottom: '1px solid #f0f0f0'
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        marginRight: '12px',
+                        background: getPriorityColor(task.priority)
+                      }}
+                    />
+                    <span
+                      style={{
+                        flex: 1,
+                        textDecoration: task.completed ? 'line-through' : 'none',
+                        color: task.completed ? '#95a5a6' : '#2c3e50'
+                      }}
+                    >
+                      {task.name}
+                    </span>
+                    {task.completed && <span style={{ color: '#27ae60' }}>✓</span>}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p style={{ textAlign: 'center', color: '#7f8c8d' }}>
+                {currentLanguage === 'ka'
+                  ? 'დღეს არ გაქვს დავალებები'
+                  : 'No tasks for today'}
+              </p>
+            )}
           </div>
         );
 
@@ -455,8 +507,8 @@ export function MainContent({
         <AddTaskModal
           isOpen={showProjectTaskModal}
           onClose={() => setShowProjectTaskModal(false)}
-          onSubmit={(taskName, priority) => {
-            onAddProjectTask(selectedProject.id, taskName, priority);
+          onSubmit={(taskName, priority, dueDate) => {
+            onAddProjectTask(selectedProject.id, taskName, priority, dueDate);
             setShowProjectTaskModal(false);
           }}
           currentLanguage={currentLanguage}
