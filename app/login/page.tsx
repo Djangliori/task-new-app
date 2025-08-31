@@ -43,17 +43,86 @@ export default function LoginPage() {
   const t = (key: keyof typeof translations.ka) =>
     translations[currentLanguage][key];
 
-  // Load language on mount
+  // Load language and check auto-login on mount
   useEffect(() => {
     const savedLanguage =
       (localStorage.getItem('language') as 'ka' | 'en') || 'ka';
     setCurrentLanguage(savedLanguage);
+
+    // Check if user is already logged in
+    const isAuthenticated = localStorage.getItem('isAuthenticated');
+    if (isAuthenticated === 'true') {
+      router.push('/');
+      return;
+    }
+
+    // Auto-fill with saved credentials if available
+    const savedCredentials = localStorage.getItem('savedCredentials');
+    if (savedCredentials) {
+      try {
+        const { email, password } = JSON.parse(savedCredentials);
+        setUsername(email);
+        setPassword(password);
+        // Auto-login
+        handleAutoLogin(email, password);
+      } catch {
+        // If parsing fails, clear saved credentials
+        localStorage.removeItem('savedCredentials');
+      }
+    }
+
+    // Add default user to localStorage if not exists
+    const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
+    const defaultUserExists = existingUsers.find(
+      (u: { email: string }) => u.email === 'mangalashvili@gmail.com'
+    );
+    
+    if (!defaultUserExists) {
+      const updatedUsers = [
+        ...existingUsers,
+        {
+          email: 'mangalashvili@gmail.com',
+          password: 'Erekle2003',
+          firstName: 'Erekle',
+          lastName: 'Mangalashvili'
+        }
+      ];
+      localStorage.setItem('users', JSON.stringify(updatedUsers));
+    }
   }, []);
 
   const toggleLanguage = () => {
     const newLanguage = currentLanguage === 'ka' ? 'en' : 'ka';
     setCurrentLanguage(newLanguage);
     localStorage.setItem('language', newLanguage);
+  };
+
+  const handleAutoLogin = async (email: string, password: string) => {
+    // Check existing users in localStorage
+    const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
+    const user = existingUsers.find(
+      (u: { email: string; password: string }) =>
+        u.email === email && u.password === password
+    );
+
+    if (user) {
+      // Save to localStorage
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('currentUser', JSON.stringify(user));
+      // Redirect to main page
+      router.push('/');
+    } else if (email === 'admin@test.com' && password === 'password') {
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem(
+        'currentUser',
+        JSON.stringify({
+          email: 'admin@test.com',
+          firstName: 'Admin',
+          lastName: 'User',
+        })
+      );
+      router.push('/');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -72,7 +141,8 @@ export default function LoginPage() {
       // Save to localStorage
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('currentUser', JSON.stringify(user));
-
+      // Save credentials for next time
+      localStorage.setItem('savedCredentials', JSON.stringify({ email: username, password }));
       // Redirect to main page
       router.push('/');
     } else {
@@ -87,6 +157,7 @@ export default function LoginPage() {
             lastName: 'User',
           })
         );
+        localStorage.setItem('savedCredentials', JSON.stringify({ email: username, password }));
         router.push('/');
       } else {
         setError(t('errorWrongCredentials'));

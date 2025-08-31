@@ -109,7 +109,7 @@ body {
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
-  color: #bdc3c7;
+  color: white;
   font-size: 14px;
   font-weight: 500;
 }
@@ -324,7 +324,7 @@ body {
   cursor: pointer;
   transition: all 0.2s ease;
   margin-bottom: 2px;
-  color: #bdc3c7;
+  color: white;
   font-size: 14px;
 }
 
