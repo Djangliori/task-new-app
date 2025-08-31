@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { AddTaskModal } from '../forms/AddTaskModal';
 import { TaskDropdown } from '../ui/TaskDropdown';
+import { TaskCalendar } from '../calendar/TaskCalendar';
 import { getPriorityColor } from '../../utils/constants';
 
 interface Task {
@@ -191,19 +192,19 @@ export function MainContent({
 
       case 'todayNav':
         return (
-          <div className="welcome-card">
-            <h2
-              style={{
-                color: '#2c3e50',
-                fontSize: '24px',
-                fontFamily: 'system-ui, -apple-system, sans-serif',
-                textAlign: 'center',
+          <div style={{ padding: '20px' }}>
+            <TaskCalendar
+              tasks={tasks}
+              projectTasks={projectTasks}
+              onDateSelect={(date) => {
+                console.log('Selected date:', date);
               }}
-            >
-              {currentLanguage === 'ka'
-                ? 'დღევანდელი დავალებები'
-                : "Today's Tasks"}
-            </h2>
+              onAddTask={(date) => {
+                console.log('Add task for date:', date);
+                // TODO: Open add task modal with selected date
+              }}
+              currentLanguage={currentLanguage}
+            />
           </div>
         );
 
