@@ -148,7 +148,7 @@ export function Sidebar({
                       onClick={() => onProjectClick(project)}
                     >
                       <span style={{ marginRight: '8px', fontSize: '12px' }}>
-                        {project.isOpen ? '📂' : '🗂️'}
+                        {project.isOpen ? '📁' : '📁'}
                       </span>
                       <span className="project-name">{project.name}</span>
                     </div>

@@ -38,7 +38,7 @@ export function DatePicker({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleDateChange = (date: any) => {
+  const handleDateChange = (date: Date | Date[] | null) => {
     const selectedDate = Array.isArray(date) ? date[0] : date;
     setSelectedDate(selectedDate);
     onChange(selectedDate);
@@ -150,16 +150,16 @@ export function DatePicker({
         <div
           style={{
             position: 'absolute',
-            top: '100%',
-            left: 0,
-            right: 0,
+            top: 0,
+            left: '100%',
             zIndex: 1000,
-            marginTop: '4px',
+            marginLeft: '8px',
             background: 'white',
             borderRadius: '12px',
             boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
             border: '1px solid #e9ecef',
             overflow: 'hidden',
+            minWidth: '300px',
           }}
         >
           <Calendar

@@ -62,7 +62,7 @@ export function TaskCalendar({
   };
 
   // Handle date change
-  const handleDateChange = (value: any) => {
+  const handleDateChange = (value: Date | Date[] | null) => {
     const date = Array.isArray(value) ? value[0] : value;
     setSelectedDate(date);
     onDateSelect(date);

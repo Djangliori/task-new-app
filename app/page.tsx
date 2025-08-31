@@ -17,9 +17,6 @@ export default function TaskManager() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<number | null>(null);
   const [newProjectName, setNewProjectName] = useState('');
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [projectToEdit, setProjectToEdit] = useState<number | null>(null);
-  const [editProjectName, setEditProjectName] = useState('');
   const [projects, setProjects] = useState<
     Array<{ id: number; name: string; isOpen: boolean }>
   >([]);
@@ -161,25 +158,6 @@ export default function TaskManager() {
   };
 
   // Project menu handlers
-
-  const confirmEdit = () => {
-    if (projectToEdit && editProjectName.trim()) {
-      setProjects(
-        projects.map((p) =>
-          p.id === projectToEdit ? { ...p, name: editProjectName.trim() } : p
-        )
-      );
-      setProjectToEdit(null);
-      setEditProjectName('');
-    }
-    setShowEditModal(false);
-  };
-
-  const cancelEdit = () => {
-    setProjectToEdit(null);
-    setEditProjectName('');
-    setShowEditModal(false);
-  };
 
   const deleteProject = (projectId: number) => {
     setProjectToDelete(projectId);
@@ -372,20 +350,6 @@ export default function TaskManager() {
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
         variant="danger"
-      />
-
-      <ProjectModal
-        isOpen={showEditModal}
-        mode="edit"
-        projectName={editProjectName}
-        currentLanguage={currentLanguage}
-        onClose={cancelEdit}
-        onSubmit={(e) => {
-          e.preventDefault();
-          confirmEdit();
-        }}
-        onProjectNameChange={setEditProjectName}
-        t={t}
       />
 
       {/* Add Task Modal */}

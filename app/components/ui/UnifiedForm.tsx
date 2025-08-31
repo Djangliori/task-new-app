@@ -6,7 +6,6 @@ interface UnifiedFormProps {
   title: string;
   children: React.ReactNode;
   onSubmit: (e: React.FormEvent) => void;
-  isLoading?: boolean;
   className?: string;
 }
 
@@ -14,7 +13,6 @@ export function UnifiedForm({
   title,
   children,
   onSubmit,
-  isLoading = false,
   className = '',
 }: UnifiedFormProps) {
   return (

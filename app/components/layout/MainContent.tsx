@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { AddTaskModal } from '../forms/AddTaskModal';
 import { TaskDropdown } from '../ui/TaskDropdown';
-import { TaskCalendar } from '../calendar/TaskCalendar';
 import { getPriorityColor } from '../../utils/constants';
 
 interface Task {
@@ -67,28 +66,6 @@ export function MainContent({
 }: MainContentProps) {
   const [showProjectTaskModal, setShowProjectTaskModal] = useState(false);
 
-  const getPriorityText = (priority: 'high' | 'medium' | 'low') => {
-    if (currentLanguage === 'ka') {
-      switch (priority) {
-        case 'high':
-          return 'მაღალი';
-        case 'medium':
-          return 'საშუალო';
-        case 'low':
-          return 'დაბალი';
-      }
-    } else {
-      switch (priority) {
-        case 'high':
-          return 'High';
-        case 'medium':
-          return 'Medium';
-        case 'low':
-          return 'Low';
-      }
-    }
-  };
-
   const renderContent = () => {
     switch (activeNavItem) {
       case 'homeNav':
@@ -148,15 +125,6 @@ export function MainContent({
                           }}
                         >
                           {task.name}
-                        </div>
-                        <div
-                          style={{
-                            fontSize: '12px',
-                            color: '#7f8c8d',
-                          }}
-                        >
-                          {currentLanguage === 'ka' ? 'პრიორიტეტი' : 'Priority'}
-                          : {getPriorityText(task.priority)}
                         </div>
                       </div>
                       <TaskDropdown
@@ -236,7 +204,8 @@ export function MainContent({
                         height: '8px',
                         borderRadius: '50%',
                         marginRight: '12px',
-                        background: getPriorityColor(task.priority),
+                        border: `1px solid ${getPriorityColor(task.priority)}`,
+                        background: 'white',
                       }}
                     />
                     <span
@@ -450,17 +419,6 @@ export function MainContent({
                             }}
                           >
                             {task.name}
-                          </div>
-                          <div
-                            style={{
-                              fontSize: '12px',
-                              color: '#7f8c8d',
-                            }}
-                          >
-                            {currentLanguage === 'ka'
-                              ? 'პრიორიტეტი'
-                              : 'Priority'}
-                            : {getPriorityText(task.priority)}
                           </div>
                         </div>
                         <TaskDropdown

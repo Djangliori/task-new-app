@@ -11,12 +11,9 @@ const translations = {
     createProject: 'პროექტის შექმნა',
     myProjects: 'ჩემი პროექტები',
     welcomeMessage: 'კეთილი იყოს თქვენი მობრძანება Task Manager-ში',
-    selectProjectMessage: 'დასაწყებად აირჩიეთ პროექტი sidebar-იდან',
     appTitle: 'Task Manager',
     edit: 'რედაქტირება',
     delete: 'წაშლა',
-    addToFavorites: 'რჩეულებში დამატება',
-    removeFromFavorites: 'რჩეულებიდან ამოღება',
   },
   en: {
     home: 'Home',
@@ -28,12 +25,9 @@ const translations = {
     createProject: 'Create Project',
     myProjects: 'My Projects',
     welcomeMessage: 'Welcome to Task Manager',
-    selectProjectMessage: 'Select a project from the sidebar to get started',
     appTitle: 'Task Manager',
     edit: 'Edit',
     delete: 'Delete',
-    addToFavorites: 'Add to Favorites',
-    removeFromFavorites: 'Remove from Favorites',
   },
 };
 
