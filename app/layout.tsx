@@ -1,7 +1,7 @@
 import './globals.css';
 
 export const metadata = {
-  title: 'Task New App - Auto Deploy Working!',
+  title: 'Task Manager',
   description:
     'A comprehensive task management web application with automated deployment',
 };
