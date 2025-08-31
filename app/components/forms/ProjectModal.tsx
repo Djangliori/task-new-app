@@ -26,9 +26,14 @@ export function ProjectModal({
   if (!isOpen) return null;
 
   const title = mode === 'create' ? t('createProject') : t('editProject');
-  const submitText = mode === 'create' 
-    ? (currentLanguage === 'ka' ? 'შექმნა' : 'Create')
-    : (currentLanguage === 'ka' ? 'შენახვა' : 'Save');
+  const submitText =
+    mode === 'create'
+      ? currentLanguage === 'ka'
+        ? 'შექმნა'
+        : 'Create'
+      : currentLanguage === 'ka'
+        ? 'შენახვა'
+        : 'Save';
 
   return (
     <div
@@ -73,7 +78,9 @@ export function ProjectModal({
           }
         />
 
-        <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+        <div
+          style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}
+        >
           <UnifiedButton
             type="button"
             variant="secondary"

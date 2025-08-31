@@ -17,7 +17,7 @@ export function DatePicker({
   onChange,
   placeholder,
   currentLanguage,
-  label
+  label,
 }: DatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(value || null);
@@ -26,7 +26,10 @@ export function DatePicker({
   // Close calendar when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -44,7 +47,7 @@ export function DatePicker({
 
   const formatDate = (date: Date | null) => {
     if (!date) return '';
-    return currentLanguage === 'ka' 
+    return currentLanguage === 'ka'
       ? date.toLocaleDateString('ka-GE')
       : date.toLocaleDateString('en-US');
   };
@@ -69,7 +72,7 @@ export function DatePicker({
           {label}
         </label>
       )}
-      
+
       <div
         onClick={() => setIsOpen(!isOpen)}
         style={{
@@ -82,7 +85,7 @@ export function DatePicker({
           cursor: 'pointer',
           transition: 'all 0.2s ease',
           fontSize: '16px',
-          position: 'relative'
+          position: 'relative',
         }}
         onMouseEnter={(e) => {
           (e.target as HTMLElement).style.borderColor = '#4da8da';
@@ -96,12 +99,15 @@ export function DatePicker({
         <span
           style={{
             flex: 1,
-            color: selectedDate ? '#2c3e50' : '#95a5a6'
+            color: selectedDate ? '#2c3e50' : '#95a5a6',
           }}
         >
-          {selectedDate ? formatDate(selectedDate) : (placeholder || (currentLanguage === 'ka' ? 'აირჩიეთ თარიღი' : 'Select date'))}
+          {selectedDate
+            ? formatDate(selectedDate)
+            : placeholder ||
+              (currentLanguage === 'ka' ? 'აირჩიეთ თარიღი' : 'Select date')}
         </span>
-        
+
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {selectedDate && (
             <button
@@ -117,20 +123,22 @@ export function DatePicker({
                 fontSize: '18px',
                 padding: '0',
                 display: 'flex',
-                alignItems: 'center'
+                alignItems: 'center',
               }}
-              title={currentLanguage === 'ka' ? 'თარიღის გასუფთავება' : 'Clear date'}
+              title={
+                currentLanguage === 'ka' ? 'თარიღის გასუფთავება' : 'Clear date'
+              }
             >
               ×
             </button>
           )}
-          
+
           <span
             style={{
               color: '#4da8da',
               fontSize: '16px',
               display: 'flex',
-              alignItems: 'center'
+              alignItems: 'center',
             }}
           >
             📅
@@ -151,7 +159,7 @@ export function DatePicker({
             borderRadius: '12px',
             boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
             border: '1px solid #e9ecef',
-            overflow: 'hidden'
+            overflow: 'hidden',
           }}
         >
           <Calendar
@@ -184,7 +192,7 @@ export function DatePicker({
           padding: 8px;
         }
         .custom-date-picker .react-calendar__navigation button:hover {
-          background: rgba(255,255,255,0.1) !important;
+          background: rgba(255, 255, 255, 0.1) !important;
         }
         .custom-date-picker .react-calendar__month-view__weekdays {
           background: #f8f9fa;

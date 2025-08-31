@@ -3,7 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { CenterWrapper } from '../components/ui/CenterWrapper';
-import { UnifiedForm, UnifiedInput, UnifiedButton } from '../components/ui/UnifiedForm';
+import {
+  UnifiedForm,
+  UnifiedInput,
+  UnifiedButton,
+} from '../components/ui/UnifiedForm';
 
 export default function RegisterPage() {
   const [firstName, setFirstName] = useState('');
@@ -166,11 +170,15 @@ export default function RegisterPage() {
           </button>
         </div>
 
-        <UnifiedForm
-          title={t('register')}
-          onSubmit={handleSubmit}
-        >
-          <div style={{ textAlign: 'center', marginBottom: '24px', color: '#7f8c8d', fontSize: '16px' }}>
+        <UnifiedForm title={t('register')} onSubmit={handleSubmit}>
+          <div
+            style={{
+              textAlign: 'center',
+              marginBottom: '24px',
+              color: '#7f8c8d',
+              fontSize: '16px',
+            }}
+          >
             {t('createNewAccount')}
           </div>
 
@@ -283,7 +291,9 @@ export default function RegisterPage() {
                 : undefined
             }
             success={
-              confirmPassword.length > 0 && password === confirmPassword && password.length >= 6
+              confirmPassword.length > 0 &&
+              password === confirmPassword &&
+              password.length >= 6
                 ? currentLanguage === 'ka'
                   ? 'პაროლები ემთხვევა'
                   : 'Passwords match'

@@ -6,7 +6,11 @@ import { DatePicker } from '../ui/DatePicker';
 interface AddTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (taskName: string, priority: 'high' | 'medium' | 'low', dueDate?: Date | null) => void;
+  onSubmit: (
+    taskName: string,
+    priority: 'high' | 'medium' | 'low',
+    dueDate?: Date | null
+  ) => void;
   currentLanguage: 'ka' | 'en';
 }
 

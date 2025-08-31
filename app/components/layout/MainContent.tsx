@@ -195,11 +195,13 @@ export function MainContent({
 
       case 'todayNav':
         const today = new Date();
-        const todayTasks = tasks.filter(task => {
-          const taskDate = task.dueDate ? new Date(task.dueDate) : new Date(task.createdAt);
+        const todayTasks = tasks.filter((task) => {
+          const taskDate = task.dueDate
+            ? new Date(task.dueDate)
+            : new Date(task.createdAt);
           return taskDate.toDateString() === today.toDateString();
         });
-        
+
         return (
           <div className="welcome-card">
             <h2
@@ -208,14 +210,14 @@ export function MainContent({
                 fontSize: '24px',
                 fontFamily: 'system-ui, -apple-system, sans-serif',
                 textAlign: 'center',
-                marginBottom: '24px'
+                marginBottom: '24px',
               }}
             >
               {currentLanguage === 'ka'
                 ? 'დღევანდელი დავალებები'
                 : "Today's Tasks"}
             </h2>
-            
+
             {todayTasks.length > 0 ? (
               <div style={{ textAlign: 'left' }}>
                 {todayTasks.map((task) => (
@@ -225,7 +227,7 @@ export function MainContent({
                       display: 'flex',
                       alignItems: 'center',
                       padding: '12px 0',
-                      borderBottom: '1px solid #f0f0f0'
+                      borderBottom: '1px solid #f0f0f0',
                     }}
                   >
                     <div
@@ -234,19 +236,23 @@ export function MainContent({
                         height: '8px',
                         borderRadius: '50%',
                         marginRight: '12px',
-                        background: getPriorityColor(task.priority)
+                        background: getPriorityColor(task.priority),
                       }}
                     />
                     <span
                       style={{
                         flex: 1,
-                        textDecoration: task.completed ? 'line-through' : 'none',
-                        color: task.completed ? '#95a5a6' : '#2c3e50'
+                        textDecoration: task.completed
+                          ? 'line-through'
+                          : 'none',
+                        color: task.completed ? '#95a5a6' : '#2c3e50',
                       }}
                     >
                       {task.name}
                     </span>
-                    {task.completed && <span style={{ color: '#27ae60' }}>✓</span>}
+                    {task.completed && (
+                      <span style={{ color: '#27ae60' }}>✓</span>
+                    )}
                   </div>
                 ))}
               </div>

@@ -3,7 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { CenterWrapper } from '../components/ui/CenterWrapper';
-import { UnifiedForm, UnifiedInput, UnifiedButton } from '../components/ui/UnifiedForm';
+import {
+  UnifiedForm,
+  UnifiedInput,
+  UnifiedButton,
+} from '../components/ui/UnifiedForm';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -77,7 +81,7 @@ export default function LoginPage() {
     const defaultUserExists = existingUsers.find(
       (u: { email: string }) => u.email === 'mangalashvili@gmail.com'
     );
-    
+
     if (!defaultUserExists) {
       const updatedUsers = [
         ...existingUsers,
@@ -85,8 +89,8 @@ export default function LoginPage() {
           email: 'mangalashvili@gmail.com',
           password: 'Erekle2003',
           firstName: 'Erekle',
-          lastName: 'Mangalashvili'
-        }
+          lastName: 'Mangalashvili',
+        },
       ];
       localStorage.setItem('users', JSON.stringify(updatedUsers));
     }
@@ -143,7 +147,10 @@ export default function LoginPage() {
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('currentUser', JSON.stringify(user));
       // Save credentials for next time
-      localStorage.setItem('savedCredentials', JSON.stringify({ email: username, password }));
+      localStorage.setItem(
+        'savedCredentials',
+        JSON.stringify({ email: username, password })
+      );
       // Redirect to main page
       router.push('/');
     } else {
@@ -158,7 +165,10 @@ export default function LoginPage() {
             lastName: 'User',
           })
         );
-        localStorage.setItem('savedCredentials', JSON.stringify({ email: username, password }));
+        localStorage.setItem(
+          'savedCredentials',
+          JSON.stringify({ email: username, password })
+        );
         router.push('/');
       } else {
         setError(t('errorWrongCredentials'));
@@ -197,11 +207,15 @@ export default function LoginPage() {
           </button>
         </div>
 
-        <UnifiedForm
-          title={t('login')}
-          onSubmit={handleSubmit}
-        >
-          <div style={{ textAlign: 'center', marginBottom: '24px', color: '#7f8c8d', fontSize: '16px' }}>
+        <UnifiedForm title={t('login')} onSubmit={handleSubmit}>
+          <div
+            style={{
+              textAlign: 'center',
+              marginBottom: '24px',
+              color: '#7f8c8d',
+              fontSize: '16px',
+            }}
+          >
             {t('taskManagerLogin')}
           </div>
 

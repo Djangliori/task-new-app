@@ -40,7 +40,10 @@ export function Sidebar({
   t,
 }: SidebarProps) {
   return (
-    <div className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`} id="sidebar">
+    <div
+      className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}
+      id="sidebar"
+    >
       <div className="sidebar-header">
         <div className="header-controls">
           <div className="profile-container">

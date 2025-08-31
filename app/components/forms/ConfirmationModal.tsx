@@ -100,7 +100,9 @@ export function ConfirmationModal({
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+        <div
+          style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}
+        >
           <button
             onClick={onCancel}
             style={{
@@ -139,11 +141,14 @@ export function ConfirmationModal({
               boxShadow: `0 4px 12px ${styles.confirmBg}30`,
             }}
             onMouseEnter={(e) => {
-              (e.target as HTMLButtonElement).style.background = styles.confirmHover;
-              (e.target as HTMLButtonElement).style.transform = 'translateY(-1px)';
+              (e.target as HTMLButtonElement).style.background =
+                styles.confirmHover;
+              (e.target as HTMLButtonElement).style.transform =
+                'translateY(-1px)';
             }}
             onMouseLeave={(e) => {
-              (e.target as HTMLButtonElement).style.background = styles.confirmBg;
+              (e.target as HTMLButtonElement).style.background =
+                styles.confirmBg;
               (e.target as HTMLButtonElement).style.transform = 'translateY(0)';
             }}
           >

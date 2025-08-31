@@ -45,7 +45,10 @@ export function UnifiedForm({
         </h2>
       </div>
 
-      <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <form
+        onSubmit={onSubmit}
+        style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}
+      >
         {children}
       </form>
     </div>
@@ -78,16 +81,12 @@ export function UnifiedInput({
   const borderColor = error
     ? '#e74c3c'
     : success
-    ? '#27ae60'
-    : isFocused
-    ? '#4da8da'
-    : '#e9ecef';
+      ? '#27ae60'
+      : isFocused
+        ? '#4da8da'
+        : '#e9ecef';
 
-  const labelColor = error
-    ? '#e74c3c'
-    : success
-    ? '#27ae60'
-    : '#2c3e50';
+  const labelColor = error ? '#e74c3c' : success ? '#27ae60' : '#2c3e50';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -100,9 +99,11 @@ export function UnifiedInput({
         }}
       >
         {label}
-        {required && <span style={{ color: '#e74c3c', marginLeft: '4px' }}>*</span>}
+        {required && (
+          <span style={{ color: '#e74c3c', marginLeft: '4px' }}>*</span>
+        )}
       </label>
-      
+
       <input
         type={type}
         value={value}
@@ -122,7 +123,7 @@ export function UnifiedInput({
           boxShadow: isFocused ? `0 0 0 3px ${borderColor}20` : 'none',
         }}
       />
-      
+
       {error && (
         <span
           style={{
@@ -137,7 +138,7 @@ export function UnifiedInput({
           ⚠ {error}
         </span>
       )}
-      
+
       {success && (
         <span
           style={{
@@ -197,13 +198,15 @@ export function UnifiedButton({
       case 'primary':
         return {
           ...baseStyles,
-          background: disabled || isLoading 
-            ? '#bdc3c7' 
-            : 'linear-gradient(135deg, #4da8da 0%, #80d8c3 100%)',
+          background:
+            disabled || isLoading
+              ? '#bdc3c7'
+              : 'linear-gradient(135deg, #4da8da 0%, #80d8c3 100%)',
           color: 'white',
-          boxShadow: disabled || isLoading 
-            ? 'none' 
-            : '0 4px 12px rgba(77, 168, 218, 0.3)',
+          boxShadow:
+            disabled || isLoading
+              ? 'none'
+              : '0 4px 12px rgba(77, 168, 218, 0.3)',
         };
       case 'secondary':
         return {
@@ -217,9 +220,10 @@ export function UnifiedButton({
           ...baseStyles,
           background: 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)',
           color: 'white',
-          boxShadow: disabled || isLoading 
-            ? 'none' 
-            : '0 4px 12px rgba(231, 76, 60, 0.3)',
+          boxShadow:
+            disabled || isLoading
+              ? 'none'
+              : '0 4px 12px rgba(231, 76, 60, 0.3)',
         };
       default:
         return baseStyles;

@@ -1,13 +1,13 @@
 export const PRIORITY_COLORS = {
-  high: '#e74c3c',    // წითელი
-  medium: '#f1c40f',  // ყვითელი  
-  low: '#ffffff',     // თეთრი
+  high: '#e74c3c', // წითელი
+  medium: '#f1c40f', // ყვითელი
+  low: '#ffffff', // თეთრი
 } as const;
 
 export const PRIORITY_ICONS = {
-  high: '●',    // წითელი წრე
-  medium: '●',  // ყვითელი წრე
-  low: '●',     // თეთრი წრე
+  high: '●', // წითელი წრე
+  medium: '●', // ყვითელი წრე
+  low: '●', // თეთრი წრე
 } as const;
 
 export type Priority = keyof typeof PRIORITY_COLORS;
