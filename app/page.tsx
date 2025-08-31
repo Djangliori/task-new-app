@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { SimpleModal } from './components/ui/SimpleModal';
+import { UnifiedForm, UnifiedInput, UnifiedButton } from './components/ui/UnifiedForm';
 import { SimpleDropdown } from './components/ui/SimpleDropdown';
 import { MainContent } from './components/layout/MainContent';
 import { useTranslation } from './components/hooks/useTranslation';
@@ -455,75 +456,77 @@ export default function TaskManager() {
       </div>
 
       {/* Create Project Modal */}
-      <SimpleModal
-        isOpen={showCreateModal}
-        onClose={cancelCreate}
-        title={t('createProject')}
-      >
-        <div>
-          <label
-            style={{
-              display: 'block',
-              marginBottom: '8px',
-              fontWeight: '600',
-              color: '#2c3e50',
+      {showCreateModal && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10000,
+          }}
+          onClick={(e) => e.target === e.currentTarget && cancelCreate()}
+        >
+          <UnifiedForm
+            title={t('createProject')}
+            onSubmit={(e) => {
+              e.preventDefault();
+              createProject();
             }}
           >
-            {currentLanguage === 'ka' ? 'პროექტის სახელი:' : 'Project Name:'}
-          </label>
-          <input
-            type="text"
-            value={newProjectName}
-            onChange={(e) => setNewProjectName(e.target.value)}
-            placeholder={
-              currentLanguage === 'ka'
-                ? 'შეიყვანეთ პროექტის სახელი'
-                : 'Enter project name'
-            }
-            autoFocus
-            onKeyPress={(e) => e.key === 'Enter' && createProject()}
-            style={{
-              width: '100%',
-              padding: '12px',
-              border: '2px solid #e9ecef',
-              borderRadius: '8px',
-              fontSize: '16px',
-              marginBottom: '20px',
-            }}
-          />
-          <div
-            style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}
-          >
-            <button
-              onClick={cancelCreate}
-              style={{
-                padding: '10px 20px',
-                background: '#6c757d',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-              }}
-            >
-              {currentLanguage === 'ka' ? 'გაუქმება' : 'Cancel'}
-            </button>
-            <button
-              onClick={createProject}
-              disabled={!newProjectName.trim()}
-              style={{
-                padding: '10px 20px',
-                background: newProjectName.trim() ? '#27ae60' : '#ccc',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: newProjectName.trim() ? 'pointer' : 'not-allowed',
-              }}
-            >
-              {currentLanguage === 'ka' ? 'შექმნა' : 'Create'}
-            </button>
-          </div>
+            <UnifiedInput
+              label={currentLanguage === 'ka' ? 'პროექტის სახელი' : 'Project Name'}
+              value={newProjectName}
+              onChange={(e) => setNewProjectName(e.target.value)}
+              placeholder={
+                currentLanguage === 'ka'
+                  ? 'შეიყვანეთ პროექტის სახელი'
+                  : 'Enter project name'
+              }
+              required
+              error={
+                newProjectName.length > 0 && newProjectName.trim().length < 2
+                  ? currentLanguage === 'ka'
+                    ? 'მინიმუმ 2 სიმბოლო'
+                    : 'Minimum 2 characters'
+                  : undefined
+              }
+              success={
+                newProjectName.trim().length >= 2
+                  ? currentLanguage === 'ka'
+                    ? 'კარგი სახელია'
+                    : 'Good name'
+                  : undefined
+              }
+            />
+            
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <UnifiedButton
+                type="button"
+                variant="secondary"
+                onClick={cancelCreate}
+                fullWidth={false}
+              >
+                {currentLanguage === 'ka' ? 'გაუქმება' : 'Cancel'}
+              </UnifiedButton>
+              
+              <UnifiedButton
+                type="submit"
+                variant="primary"
+                disabled={!newProjectName.trim() || newProjectName.trim().length < 2}
+                fullWidth={false}
+              >
+                {currentLanguage === 'ka' ? 'შექმნა' : 'Create'}
+              </UnifiedButton>
+            </div>
+          </UnifiedForm>
         </div>
-      </SimpleModal>
+      )}
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && projectToDelete && (

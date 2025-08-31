@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { CenterWrapper } from '../components/ui/CenterWrapper';
+import { UnifiedForm, UnifiedInput, UnifiedButton } from '../components/ui/UnifiedForm';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -169,187 +170,134 @@ export default function LoginPage() {
 
   return (
     <CenterWrapper>
-      <div
-        style={{
-          background: 'white',
-          padding: '40px',
-          borderRadius: '12px',
-          boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-          width: '400px',
-          maxWidth: '90vw',
-          boxSizing: 'border-box',
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-        }}
-      >
-        <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-          <div
+      <div style={{ position: 'relative', width: '100%', maxWidth: '450px' }}>
+        <div
+          style={{
+            position: 'absolute',
+            top: '16px',
+            right: '16px',
+            zIndex: 10,
+          }}
+        >
+          <button
+            onClick={toggleLanguage}
             style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              marginBottom: '20px',
+              background: 'none',
+              border: '2px solid #4da8da',
+              color: '#4da8da',
+              padding: '8px 12px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '600',
+              transition: 'all 0.2s ease',
             }}
           >
-            <button
-              onClick={toggleLanguage}
-              style={{
-                background: 'none',
-                border: '2px solid #667eea',
-                color: '#667eea',
-                padding: '8px 12px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '600',
-              }}
-            >
-              {currentLanguage === 'ka' ? 'ENG' : 'ქარ'}
-            </button>
-          </div>
-
-          <h1
-            style={{
-              color: '#2c3e50',
-              marginBottom: '8px',
-              fontSize: '28px',
-              fontWeight: '700',
-            }}
-          >
-            {t('login')}
-          </h1>
-          <p
-            style={{
-              color: '#7f8c8d',
-              margin: 0,
-              fontSize: '16px',
-            }}
-          >
-            {t('taskManagerLogin')}
-          </p>
+            {currentLanguage === 'ka' ? 'ENG' : 'ქარ'}
+          </button>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '20px' }}>
-            <label
-              style={{
-                display: 'block',
-                marginBottom: '8px',
-                color: '#2c3e50',
-                fontWeight: '600',
-                fontSize: '14px',
-                textAlign: 'center',
-              }}
-            >
-              {t('email')}
-            </label>
-            <input
-              type="email"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder={t('emailPlaceholder')}
-              required
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                border: '2px solid #e9ecef',
-                borderRadius: '8px',
-                fontSize: '16px',
-                transition: 'border-color 0.2s',
-                boxSizing: 'border-box',
-              }}
-            />
+        <UnifiedForm
+          title={t('login')}
+          onSubmit={handleSubmit}
+        >
+          <div style={{ textAlign: 'center', marginBottom: '24px', color: '#7f8c8d', fontSize: '16px' }}>
+            {t('taskManagerLogin')}
           </div>
 
-          <div style={{ marginBottom: '20px' }}>
-            <label
-              style={{
-                display: 'block',
-                marginBottom: '8px',
-                color: '#2c3e50',
-                fontWeight: '600',
-                fontSize: '14px',
-                textAlign: 'center',
-              }}
-            >
-              {t('password')}
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder={t('passwordPlaceholder')}
-              required
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                border: '2px solid #e9ecef',
-                borderRadius: '8px',
-                fontSize: '16px',
-                transition: 'border-color 0.2s',
-                boxSizing: 'border-box',
-              }}
-            />
-          </div>
+          <UnifiedInput
+            label={t('email')}
+            type="email"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder={t('emailPlaceholder')}
+            required
+            error={
+              username.length > 0 && !username.includes('@')
+                ? currentLanguage === 'ka'
+                  ? 'სწორი ემაილის ფორმატი'
+                  : 'Valid email format required'
+                : undefined
+            }
+            success={
+              username.includes('@') && username.includes('.')
+                ? currentLanguage === 'ka'
+                  ? 'სწორი ემაილი'
+                  : 'Valid email'
+                : undefined
+            }
+          />
+
+          <UnifiedInput
+            label={t('password')}
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder={t('passwordPlaceholder')}
+            required
+            error={
+              password.length > 0 && password.length < 4
+                ? currentLanguage === 'ka'
+                  ? 'მინიმუმ 4 სიმბოლო'
+                  : 'Minimum 4 characters'
+                : undefined
+            }
+            success={
+              password.length >= 4
+                ? currentLanguage === 'ka'
+                  ? 'კარგი პაროლი'
+                  : 'Good password'
+                : undefined
+            }
+          />
 
           {error && (
             <div
               style={{
                 background: '#fee',
-                color: '#c33',
+                color: '#e74c3c',
                 padding: '12px 16px',
-                borderRadius: '6px',
-                marginBottom: '20px',
+                borderRadius: '8px',
                 fontSize: '14px',
-                border: '1px solid #fcc',
+                border: '1px solid #e74c3c',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
               }}
             >
-              {error}
+              ⚠ {error}
             </div>
           )}
 
-          <button
+          <UnifiedButton
             type="submit"
+            variant="primary"
             disabled={isLoading || !username.trim() || !password.trim()}
-            style={{
-              width: '100%',
-              padding: '14px',
-              background:
-                isLoading || !username.trim() || !password.trim()
-                  ? '#bdc3c7'
-                  : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '16px',
-              fontWeight: '600',
-              cursor:
-                isLoading || !username.trim() || !password.trim()
-                  ? 'not-allowed'
-                  : 'pointer',
-              transition: 'all 0.2s',
-            }}
+            isLoading={isLoading}
           >
             {isLoading ? t('checking') : t('loginButton')}
-          </button>
-        </form>
+          </UnifiedButton>
 
-        <div
-          style={{
-            marginTop: '24px',
-            textAlign: 'center',
-          }}
-        >
-          <a
-            href="/register"
+          <div
             style={{
-              color: '#667eea',
-              textDecoration: 'none',
-              fontSize: '16px',
-              fontWeight: '500',
+              marginTop: '24px',
+              textAlign: 'center',
             }}
           >
-            {t('createAccount')}
-          </a>
-        </div>
+            <a
+              href="/register"
+              style={{
+                color: '#4da8da',
+                textDecoration: 'none',
+                fontSize: '16px',
+                fontWeight: '500',
+                transition: 'color 0.2s ease',
+              }}
+            >
+              {t('createAccount')}
+            </a>
+          </div>
+        </UnifiedForm>
       </div>
     </CenterWrapper>
   );
