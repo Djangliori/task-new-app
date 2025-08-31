@@ -1,7 +1,7 @@
 import './globals.css';
 
 export const metadata = {
-  title: 'Task Management App - Next.js Version',
+  title: 'Task Manager - Auto Deploy Test',
   description:
     'A comprehensive task management web application with automated deployment',
 };
