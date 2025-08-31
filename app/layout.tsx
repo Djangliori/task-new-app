@@ -2,7 +2,8 @@ import './globals.css';
 
 export const metadata = {
   title: 'Task Management App - Next.js Version',
-  description: 'A comprehensive task management web application with automated deployment',
+  description:
+    'A comprehensive task management web application with automated deployment',
 };
 
 export default function RootLayout({

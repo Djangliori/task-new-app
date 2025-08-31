@@ -41,6 +41,7 @@ npm run dev
 ## 🤖 Automated Deployment
 
 This project is configured for automatic deployment:
+
 - Push to GitHub → Automatic Vercel deployment
 - Continuous Integration with build checks
 - Production-ready optimizations

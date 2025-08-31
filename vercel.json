@@ -1,0 +1,10 @@
+{
+  "name": "task-manager",
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ]
+}
