@@ -21,7 +21,7 @@ A modern task management application built with Next.js 15, featuring:
 
 ## 🌐 Live Demo
 
-Visit the live application: [Task Manager](https://task-manager-2jiw2clds-djanglioris-projects.vercel.app)
+Visit the live application: [Task Manager](https://task-manager-clean.vercel.app)
 
 ## 🔧 Local Development
 
