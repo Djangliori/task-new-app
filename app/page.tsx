@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { SimpleModal } from './components/ui/SimpleModal';
-import { UnifiedForm, UnifiedInput, UnifiedButton } from './components/ui/UnifiedForm';
-import { SimpleDropdown } from './components/ui/SimpleDropdown';
+import { Sidebar } from './components/layout/Sidebar';
 import { MainContent } from './components/layout/MainContent';
+import { ProjectModal } from './components/forms/ProjectModal';
+import { ConfirmationModal } from './components/forms/ConfirmationModal';
 import { useTranslation } from './components/hooks/useTranslation';
 import { AddTaskModal } from './components/forms/AddTaskModal';
 
@@ -304,142 +304,21 @@ export default function TaskManager() {
 
   return (
     <>
-      {/* Sidebar */}
-      <div
-        className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}
-        id="sidebar"
-      >
-        <div className="sidebar-header">
-          <div className="header-controls">
-            <div className="profile-container">
-              <div className="profile-button" id="profileBtn">
-                <span className="profile-initials">👤</span>
-              </div>
-            </div>
-            <div className="language-button" onClick={toggleLanguage}>
-              <span>{currentLanguage.toUpperCase()}</span>
-            </div>
-          </div>
-          <button
-            className="collapse-btn"
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-          >
-            {sidebarCollapsed ? '→' : '←'}
-          </button>
-        </div>
-
-        <div className="sidebar-content">
-          <nav className="sidebar-nav">
-            <div
-              className={`nav-item ${activeNavItem === 'homeNav' ? 'active' : ''}`}
-              onClick={() => handleNavClick('homeNav')}
-            >
-              <span className="nav-icon">🏠</span>
-              <span>{t('home')}</span>
-            </div>
-            <div
-              className={`nav-item ${activeNavItem === 'addTaskNav' ? 'active' : ''}`}
-              onClick={() => handleNavClick('addTaskNav')}
-            >
-              <span className="nav-icon">➕</span>
-              <span>{t('addTask')}</span>
-            </div>
-            <div
-              className={`nav-item ${activeNavItem === 'searchNav' ? 'active' : ''}`}
-              onClick={() => handleNavClick('searchNav')}
-            >
-              <span className="nav-icon">🔍</span>
-              <span>{t('search')}</span>
-            </div>
-            <div
-              className={`nav-item ${activeNavItem === 'todayNav' ? 'active' : ''}`}
-              onClick={() => handleNavClick('todayNav')}
-            >
-              <span className="nav-icon">📅</span>
-              <span>{t('today')}</span>
-            </div>
-            <div
-              className={`nav-item ${activeNavItem === 'upcomingNav' ? 'active' : ''}`}
-              onClick={() => handleNavClick('upcomingNav')}
-            >
-              <span className="nav-icon">🔮</span>
-              <span>{t('upcoming')}</span>
-            </div>
-            <div
-              className={`nav-item ${activeNavItem === 'completedNav' ? 'active' : ''}`}
-              onClick={() => handleNavClick('completedNav')}
-            >
-              <span className="nav-icon">✅</span>
-              <span>{t('completed')}</span>
-            </div>
-          </nav>
-
-          {/* Projects Section */}
-          <div className="action-buttons">
-            <button
-              className="create-project-btn"
-              onClick={() => setShowCreateModal(true)}
-            >
-              <span className="btn-icon">+</span>
-              <span>{t('createProject')}</span>
-            </button>
-          </div>
-
-          <div className="projects-section" id="projectsSection">
-            <div
-              className="section-header"
-              onClick={() => setIsProjectsOpen(!isProjectsOpen)}
-            >
-              <h3>{t('myProjects')}</h3>
-              <span
-                className={`dropdown-arrow ${isProjectsOpen ? 'open' : ''}`}
-              >
-                ▼
-              </span>
-            </div>
-            {isProjectsOpen && (
-              <ul className="projects-list" id="projectsList">
-                {projects.map((project) => (
-                  <li
-                    key={project.id}
-                    className={`project-item ${activeNavItem === `project-${project.id}` ? 'active' : ''}`}
-                  >
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        width: '100%',
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          cursor: 'pointer',
-                          flex: 1,
-                        }}
-                        onClick={() => handleProjectClick(project)}
-                      >
-                        <span style={{ marginRight: '8px', fontSize: '12px' }}>
-                          {project.isOpen ? '📂' : '🗂️'}
-                        </span>
-                        <span className="project-name">{project.name}</span>
-                      </div>
-                      <SimpleDropdown
-                        projectId={project.id}
-                        projectName={project.name}
-                        onDelete={deleteProject}
-                        currentLanguage={currentLanguage}
-                      />
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-      </div>
+      <Sidebar
+        activeNavItem={activeNavItem}
+        currentLanguage={currentLanguage}
+        sidebarCollapsed={sidebarCollapsed}
+        isProjectsOpen={isProjectsOpen}
+        projects={projects}
+        onNavClick={handleNavClick}
+        onToggleLanguage={toggleLanguage}
+        onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+        onToggleProjects={() => setIsProjectsOpen(!isProjectsOpen)}
+        onProjectClick={handleProjectClick}
+        onCreateProject={() => setShowCreateModal(true)}
+        onDeleteProject={deleteProject}
+        t={t}
+      />
 
       {/* Main Content */}
       <div
@@ -460,156 +339,48 @@ export default function TaskManager() {
         />
       </div>
 
-      {/* Create Project Modal */}
-      {showCreateModal && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 10000,
-          }}
-          onClick={(e) => e.target === e.currentTarget && cancelCreate()}
-        >
-          <UnifiedForm
-            title={t('createProject')}
-            onSubmit={(e) => {
-              e.preventDefault();
-              createProject();
-            }}
-          >
-            <UnifiedInput
-              label={currentLanguage === 'ka' ? 'პროექტის სახელი' : 'Project Name'}
-              value={newProjectName}
-              onChange={(e) => setNewProjectName(e.target.value)}
-              placeholder={
-                currentLanguage === 'ka'
-                  ? 'შეიყვანეთ პროექტის სახელი'
-                  : 'Enter project name'
-              }
-              required
-              error={
-                newProjectName.length > 0 && newProjectName.trim().length < 2
-                  ? currentLanguage === 'ka'
-                    ? 'მინიმუმ 2 სიმბოლო'
-                    : 'Minimum 2 characters'
-                  : undefined
-              }
-              success={
-                newProjectName.trim().length >= 2
-                  ? currentLanguage === 'ka'
-                    ? 'კარგი სახელია'
-                    : 'Good name'
-                  : undefined
-              }
-            />
-            
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-              <UnifiedButton
-                type="button"
-                variant="secondary"
-                onClick={cancelCreate}
-                fullWidth={false}
-              >
-                {currentLanguage === 'ka' ? 'გაუქმება' : 'Cancel'}
-              </UnifiedButton>
-              
-              <UnifiedButton
-                type="submit"
-                variant="primary"
-                disabled={!newProjectName.trim() || newProjectName.trim().length < 2}
-                fullWidth={false}
-              >
-                {currentLanguage === 'ka' ? 'შექმნა' : 'Create'}
-              </UnifiedButton>
-            </div>
-          </UnifiedForm>
-        </div>
-      )}
+      <ProjectModal
+        isOpen={showCreateModal}
+        mode="create"
+        projectName={newProjectName}
+        currentLanguage={currentLanguage}
+        onClose={cancelCreate}
+        onSubmit={(e) => {
+          e.preventDefault();
+          createProject();
+        }}
+        onProjectNameChange={setNewProjectName}
+        t={t}
+      />
 
-      {/* Delete Confirmation Modal */}
-      {showDeleteModal && projectToDelete && (
-        <div
-          className="modal-overlay"
-          onClick={(e) => e.target === e.currentTarget && cancelDelete()}
-        >
-          <div className="modal">
-            <div className="modal-header">
-              <h3>
-                {currentLanguage === 'ka' ? 'პროექტის წაშლა' : 'Delete Project'}
-              </h3>
-            </div>
-            <div className="modal-body">
-              <p>
-                {currentLanguage === 'ka'
-                  ? `დარწმუნებული ხარ რომ გინდა "${projects.find((p) => p.id === projectToDelete)?.name}" პროექტის წაშლა?`
-                  : `Are you sure you want to delete "${projects.find((p) => p.id === projectToDelete)?.name}" project?`}
-              </p>
-            </div>
-            <div className="modal-footer">
-              <button className="btn-cancel" onClick={cancelDelete}>
-                {currentLanguage === 'ka' ? 'გაუქმება' : 'Cancel'}
-              </button>
-              <button className="btn-danger" onClick={confirmDelete}>
-                {currentLanguage === 'ka' ? 'წაშლა' : 'Delete'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmationModal
+        isOpen={showDeleteModal && projectToDelete !== null}
+        title={currentLanguage === 'ka' ? 'პროექტის წაშლა' : 'Delete Project'}
+        message={
+          currentLanguage === 'ka'
+            ? `დარწმუნებული ხარ რომ გინდა "${projects.find((p) => p.id === projectToDelete)?.name}" პროექტის წაშლა?`
+            : `Are you sure you want to delete "${projects.find((p) => p.id === projectToDelete)?.name}" project?`
+        }
+        confirmText={currentLanguage === 'ka' ? 'წაშლა' : 'Delete'}
+        cancelText={currentLanguage === 'ka' ? 'გაუქმება' : 'Cancel'}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+        variant="danger"
+      />
 
-      {/* Edit Project Modal */}
-      {showEditModal && projectToEdit && (
-        <div
-          className="modal-overlay"
-          onClick={(e) => e.target === e.currentTarget && cancelEdit()}
-        >
-          <div className="modal">
-            <div className="modal-header">
-              <h3>{t('edit')}</h3>
-            </div>
-            <div className="modal-body">
-              <div className="input-group">
-                <label>
-                  {currentLanguage === 'ka'
-                    ? 'პროექტის სახელი:'
-                    : 'Project Name:'}
-                </label>
-                <input
-                  type="text"
-                  value={editProjectName}
-                  onChange={(e) => setEditProjectName(e.target.value)}
-                  placeholder={
-                    currentLanguage === 'ka'
-                      ? 'შეიყვანეთ პროექტის სახელი'
-                      : 'Enter project name'
-                  }
-                  autoFocus
-                  onKeyPress={(e) => e.key === 'Enter' && confirmEdit()}
-                />
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button className="btn-cancel" onClick={cancelEdit}>
-                {currentLanguage === 'ka' ? 'გაუქმება' : 'Cancel'}
-              </button>
-              <button
-                className="btn-primary"
-                onClick={confirmEdit}
-                disabled={!editProjectName.trim()}
-              >
-                {currentLanguage === 'ka' ? 'შენახვა' : 'Save'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ProjectModal
+        isOpen={showEditModal}
+        mode="edit"
+        projectName={editProjectName}
+        currentLanguage={currentLanguage}
+        onClose={cancelEdit}
+        onSubmit={(e) => {
+          e.preventDefault();
+          confirmEdit();
+        }}
+        onProjectNameChange={setEditProjectName}
+        t={t}
+      />
 
       {/* Add Task Modal */}
       <AddTaskModal
