@@ -9,7 +9,6 @@ import {
   UnifiedButton,
 } from '../components/ui/UnifiedForm';
 import { supabase } from '../lib/supabase';
-import { createClient } from '@supabase/supabase-js';
 
 export default function RegisterPage() {
   const [firstName, setFirstName] = useState('');
@@ -121,8 +120,13 @@ export default function RegisterPage() {
 
     try {
       // Sign up with Supabase Auth (disable email confirmation for development)
-      console.log('🔄 Starting registration for:', email.trim().toLowerCase());
-      
+      if (process.env.NODE_ENV === 'development') {
+        console.log(
+          '🔄 Starting registration for:',
+          email.trim().toLowerCase()
+        );
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email: email.trim().toLowerCase(),
         password: password,
@@ -131,15 +135,17 @@ export default function RegisterPage() {
           data: {
             first_name: firstName.trim(),
             last_name: lastName.trim(),
-          }
+          },
         },
       });
-      
-      console.log('📊 Registration result:', {
-        user: data.user?.id,
-        session: data.session?.access_token ? 'YES' : 'NO',
-        error: error?.message,
-      });
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📊 Registration result:', {
+          user: data.user?.id,
+          session: data.session?.access_token ? 'YES' : 'NO',
+          error: error?.message,
+        });
+      }
 
       if (error) {
         if (error.message.includes('User already registered')) {
@@ -148,9 +154,6 @@ export default function RegisterPage() {
           setError(error.message);
         }
       } else if (data.user) {
-        // Wait for the user to be properly authenticated first
-        const { data: session } = await supabase.auth.getSession();
-        
         // Create profile using service role to bypass RLS during registration
         try {
           const response = await fetch('/api/create-profile', {
@@ -165,16 +168,25 @@ export default function RegisterPage() {
               lastName: lastName.trim(),
             }),
           });
-          
+
           if (response.ok) {
-            console.log('✅ Profile created successfully via API for:', email);
+            if (process.env.NODE_ENV === 'development') {
+              console.log(
+                '✅ Profile created successfully via API for:',
+                email
+              );
+            }
           } else {
             const error = await response.text();
-            console.error('❌ Profile API creation failed:', error);
+            if (process.env.NODE_ENV === 'development') {
+              console.error('❌ Profile API creation failed:', error);
+            }
           }
         } catch (apiError) {
-          console.error('❌ Profile API error:', apiError);
-          
+          if (process.env.NODE_ENV === 'development') {
+            console.error('❌ Profile API error:', apiError);
+          }
+
           // Fallback to direct insertion
           const { error: profileError } = await supabase.from('users').insert([
             {
@@ -184,23 +196,26 @@ export default function RegisterPage() {
               last_name: lastName.trim(),
             },
           ]);
-          
-          if (profileError) {
+
+          if (profileError && process.env.NODE_ENV === 'development') {
             console.error('❌ Direct profile creation FAILED:', profileError);
-          } else {
+          } else if (!profileError && process.env.NODE_ENV === 'development') {
             console.log('✅ Direct profile created successfully for:', email);
           }
         }
 
         // Show success message instead of immediate redirect
-        alert(currentLanguage === 'ka' 
-          ? '✅ რეგისტრაცია წარმატებით დასრულდა! გთხოვთ შეამოწმოთ თქვენი ელ-ფოსტა დასადასტურებლად.'
-          : '✅ Registration successful! Please check your email for confirmation.'
+        alert(
+          currentLanguage === 'ka'
+            ? '✅ რეგისტრაცია წარმატებით დასრულდა! გთხოვთ შეამოწმოთ თქვენი ელ-ფოსტა დასადასტურებლად.'
+            : '✅ Registration successful! Please check your email for confirmation.'
         );
         router.push('/login');
       }
     } catch (error) {
-      console.error('Registration error:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Registration error:', error);
+      }
       setError('An error occurred during registration');
     }
 
@@ -320,7 +335,7 @@ export default function RegisterPage() {
           <div>
             <UnifiedInput
               label={t('password')}
-              type={showPassword ? "text" : "password"}
+              type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder={t('passwordPlaceholder')}
@@ -376,7 +391,7 @@ export default function RegisterPage() {
           <div>
             <UnifiedInput
               label={t('confirmPassword')}
-              type={showConfirmPassword ? "text" : "password"}
+              type={showConfirmPassword ? 'text' : 'password'}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder={t('confirmPasswordPlaceholder')}

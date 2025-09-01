@@ -84,43 +84,53 @@ export default function LoginPage() {
 
     try {
       const loginEmail = username.trim().toLowerCase();
-      console.log('🔐 Attempting login with:', {
-        email: loginEmail,
-        passwordLength: password.length,
-        timestamp: new Date().toISOString()
-      });
-      
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔐 Attempting login with:', {
+          email: loginEmail,
+          passwordLength: password.length,
+          timestamp: new Date().toISOString(),
+        });
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email: username.trim().toLowerCase(),
         password: password,
       });
 
       if (error) {
-        console.error('❌ Supabase Auth Error:', {
-          message: error.message,
-          status: error.status,
-          details: error
-        });
-        
+        if (process.env.NODE_ENV === 'development') {
+          console.error('❌ Supabase Auth Error:', {
+            message: error.message,
+            status: error.status,
+            details: error,
+          });
+        }
+
         if (error.message.includes('Email not confirmed')) {
-          setError(currentLanguage === 'ka' 
-            ? 'ელ-ფოსტა არ არის დადასტურებული' 
-            : 'Email not confirmed'
+          setError(
+            currentLanguage === 'ka'
+              ? 'ელ-ფოსტა არ არის დადასტურებული'
+              : 'Email not confirmed'
           );
         } else if (error.message.includes('Invalid login credentials')) {
-          setError(currentLanguage === 'ka' 
-            ? 'არასწორი ელ-ფოსტა ან პაროლი' 
-            : 'Invalid email or password'
+          setError(
+            currentLanguage === 'ka'
+              ? 'არასწორი ელ-ფოსტა ან პაროლი'
+              : 'Invalid email or password'
           );
         } else {
           setError(t('errorWrongCredentials'));
         }
       } else if (data.user) {
-        console.log('✅ Login successful for:', data.user.email);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('✅ Login successful for:', data.user.email);
+        }
         router.push('/');
       }
     } catch (error) {
-      console.error('❌ Login catch error:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('❌ Login catch error:', error);
+      }
       setError(t('errorWrongCredentials'));
     }
 
@@ -194,7 +204,7 @@ export default function LoginPage() {
           <div>
             <UnifiedInput
               label={t('password')}
-              type={showPassword ? "text" : "password"}
+              type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder={t('passwordPlaceholder')}

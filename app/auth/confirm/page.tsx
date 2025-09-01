@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
 
-export default function ConfirmPage() {
+function ConfirmContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [message, setMessage] = useState('მიმდინარეობს დადასტურება...');
@@ -19,18 +19,24 @@ export default function ConfirmPage() {
         if (token_hash && type) {
           const { error } = await supabase.auth.verifyOtp({
             token_hash,
-            type: type as any,
+            type: type as 'signup',
           });
 
           if (error) {
-            console.error('❌ Confirmation error:', error);
+            if (process.env.NODE_ENV === 'development') {
+              console.error('❌ Confirmation error:', error);
+            }
             setMessage('დადასტურების შეცდომა. გთხოვთ ისევ სცადოთ.');
             setIsSuccess(false);
           } else {
-            console.log('✅ Email confirmed successfully');
-            setMessage('✅ ელ-ფოსტა წარმატებით დადასტურდა! ახლა შეგიძლიათ შემოხვიდეთ.');
+            if (process.env.NODE_ENV === 'development') {
+              console.log('✅ Email confirmed successfully');
+            }
+            setMessage(
+              '✅ ელ-ფოსტა წარმატებით დადასტურდა! ახლა შეგიძლიათ შემოხვიდეთ.'
+            );
             setIsSuccess(true);
-            
+
             // Redirect to login after 3 seconds
             setTimeout(() => {
               router.push('/login');
@@ -41,7 +47,9 @@ export default function ConfirmPage() {
           setIsSuccess(false);
         }
       } catch (error) {
-        console.error('❌ Confirmation catch error:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('❌ Confirmation catch error:', error);
+        }
         setMessage('❌ დადასტურების შეცდომა მოხდა.');
         setIsSuccess(false);
       }
@@ -79,7 +87,7 @@ export default function ConfirmPage() {
         >
           {isSuccess ? '✅' : '⏳'}
         </div>
-        
+
         <h2
           style={{
             color: '#2c3e50',
@@ -90,7 +98,7 @@ export default function ConfirmPage() {
         >
           ელ-ფოსტის დადასტურება
         </h2>
-        
+
         <p
           style={{
             color: '#7f8c8d',
@@ -101,7 +109,7 @@ export default function ConfirmPage() {
         >
           {message}
         </p>
-        
+
         {isSuccess && (
           <p
             style={{
@@ -113,7 +121,7 @@ export default function ConfirmPage() {
             3 წამში გადამისამართება შესვლის გვერდზე...
           </p>
         )}
-        
+
         <button
           onClick={() => router.push('/login')}
           style={{
@@ -132,5 +140,30 @@ export default function ConfirmPage() {
         </button>
       </div>
     </div>
+  );
+}
+
+export default function ConfirmPage() {
+  return (
+    <Suspense
+      fallback={
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: '100vh',
+            backgroundColor: '#f8f9fa',
+          }}
+        >
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>⏳</div>
+            <p style={{ color: '#7f8c8d' }}>იტვირთება...</p>
+          </div>
+        </div>
+      }
+    >
+      <ConfirmContent />
+    </Suspense>
   );
 }
