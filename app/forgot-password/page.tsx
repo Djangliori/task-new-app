@@ -13,11 +13,12 @@ import { useTranslation } from '../components/hooks/useTranslation';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [isSuccess, setIsSuccess] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState<'ka' | 'en'>('ka');
+  const [isSuccess, setIsSuccess] = useState(false);
 
+  // Translation hook
   const { t } = useTranslation(currentLanguage);
 
   // Load language on component mount
@@ -36,9 +37,15 @@ export default function ForgotPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setMessage('');
+    setError('');
 
     try {
+      logger.log('🔐 Attempting password reset for:', {
+        email: email.trim().toLowerCase(),
+        timestamp: new Date().toISOString(),
+      });
+
+      // Create supabase client only when needed
       const supabase = getSupabaseClient();
 
       // Get current domain for redirect URL
@@ -52,19 +59,20 @@ export default function ForgotPasswordPage() {
       );
 
       if (error) {
-        logger.error('Password reset error:', error);
-        setMessage(t('passwordUpdateError'));
-        setIsSuccess(false);
+        logger.error('❌ Password reset error:', {
+          message: error.message,
+          status: error.status,
+          details: error,
+        });
+        setError(t('passwordUpdateError'));
       } else {
-        logger.log('Password reset email sent to:', email);
-        setMessage(t('resetEmailSent'));
+        logger.log('✅ Password reset email sent to:', email);
         setIsSuccess(true);
         setEmail(''); // Clear the email field
       }
     } catch (error) {
-      logger.error('Password reset catch error:', error);
-      setMessage(t('passwordUpdateError'));
-      setIsSuccess(false);
+      logger.error('❌ Password reset catch error:', error);
+      setError(t('passwordUpdateError'));
     }
 
     setIsLoading(false);
@@ -134,21 +142,39 @@ export default function ForgotPasswordPage() {
             }
           />
 
-          {message && (
+          {error && (
             <div
               style={{
-                background: isSuccess ? '#d4edda' : '#fee',
-                color: isSuccess ? '#27ae60' : '#e74c3c',
+                background: '#fee',
+                color: '#e74c3c',
                 padding: '12px 16px',
                 borderRadius: '8px',
                 fontSize: '14px',
-                border: `1px solid ${isSuccess ? '#27ae60' : '#e74c3c'}`,
+                border: '1px solid #e74c3c',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
               }}
             >
-              {isSuccess ? '✅' : '⚠'} {message}
+              ⚠ {error}
+            </div>
+          )}
+
+          {isSuccess && (
+            <div
+              style={{
+                background: '#d4edda',
+                color: '#27ae60',
+                padding: '12px 16px',
+                borderRadius: '8px',
+                fontSize: '14px',
+                border: '1px solid #27ae60',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+            >
+              ✅ {t('resetEmailSent')}
             </div>
           )}
 
@@ -170,7 +196,7 @@ export default function ForgotPasswordPage() {
           <UnifiedButton
             type="submit"
             variant="primary"
-            disabled={isLoading || !email.trim() || isSuccess}
+            disabled={isLoading || !email.trim()}
             isLoading={isLoading}
           >
             {isLoading ? t('sendingEmail') : t('sendResetEmail')}
