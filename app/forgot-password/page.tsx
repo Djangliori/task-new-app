@@ -48,8 +48,9 @@ export default function ForgotPasswordPage() {
       // Create supabase client only when needed
       const supabase = getSupabaseClient();
 
-      // Get current domain for redirect URL
-      const redirectUrl = `${window.location.origin}/reset-password`;
+      // Get current domain for redirect URL with timestamp to ensure unique links
+      const timestamp = Date.now();
+      const redirectUrl = `${window.location.origin}/reset-password?t=${timestamp}`;
 
       const { error } = await supabase.auth.resetPasswordForEmail(
         email.trim().toLowerCase(),
@@ -201,6 +202,31 @@ export default function ForgotPasswordPage() {
           >
             {isLoading ? t('sendingEmail') : t('sendResetEmail')}
           </UnifiedButton>
+
+          {isSuccess && (
+            <button
+              type="button"
+              onClick={() => {
+                setIsSuccess(false);
+                setError('');
+              }}
+              style={{
+                marginTop: '12px',
+                padding: '8px 16px',
+                background: 'transparent',
+                color: '#4da8da',
+                border: '1px solid #4da8da',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                width: '100%',
+              }}
+            >
+              {currentLanguage === 'ka'
+                ? 'კიდევ ერთხელ გაგზავნა'
+                : 'Send another email'}
+            </button>
+          )}
 
           <div
             style={{

@@ -119,14 +119,11 @@ function ResetPasswordForm() {
         return;
       }
 
-      // Create a new Supabase client to test the old password
-      const testSupabase = getSupabaseClient();
-      const { error: verifyError } = await testSupabase.auth.signInWithPassword(
-        {
-          email: user.user.email,
-          password: oldPassword,
-        }
-      );
+      // Use the same Supabase client to test the old password
+      const { error: verifyError } = await supabase.auth.signInWithPassword({
+        email: user.user.email,
+        password: oldPassword,
+      });
 
       if (verifyError) {
         logger.error('Old password verification failed:', verifyError);
