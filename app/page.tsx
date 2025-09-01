@@ -183,7 +183,7 @@ export default function TaskManager() {
           .insert([
             {
               name: newProjectName.trim(),
-              user_id: user.id,
+              user_id: user.id as string,
               is_open: false,
             },
           ])
