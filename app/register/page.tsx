@@ -8,7 +8,7 @@ import {
   UnifiedInput,
   UnifiedButton,
 } from '../components/ui/UnifiedForm';
-import { supabase } from '../lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 
 export default function RegisterPage() {
   const [firstName, setFirstName] = useState('');
@@ -126,6 +126,12 @@ export default function RegisterPage() {
           email.trim().toLowerCase()
         );
       }
+
+      // Create supabase client only when needed
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
 
       const { data, error } = await supabase.auth.signUp({
         email: email.trim().toLowerCase(),

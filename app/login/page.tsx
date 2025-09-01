@@ -8,7 +8,7 @@ import {
   UnifiedInput,
   UnifiedButton,
 } from '../components/ui/UnifiedForm';
-import { supabase } from '../lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -60,6 +60,11 @@ export default function LoginPage() {
 
     // Check if user is already logged in with Supabase
     const checkAuth = async () => {
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -91,6 +96,12 @@ export default function LoginPage() {
           timestamp: new Date().toISOString(),
         });
       }
+
+      // Create supabase client only when needed
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email: username.trim().toLowerCase(),
