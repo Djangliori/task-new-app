@@ -180,6 +180,24 @@ export default function TaskManager() {
     setShowDeleteModal(false);
   };
 
+  // Logout function
+  const handleLogout = async () => {
+    try {
+      const supabase = getSupabaseClient();
+      await supabase.auth.signOut();
+      
+      // Clear local state
+      setUser(null);
+      setProjects([]);
+      setTasks([]);
+      
+      // Redirect to login
+      router.push('/login');
+    } catch (error) {
+      logger.error('Logout error:', error);
+    }
+  };
+
   const createProject = async () => {
     if (newProjectName.trim() && user) {
       try {
@@ -405,6 +423,7 @@ export default function TaskManager() {
         sidebarCollapsed={sidebarCollapsed}
         isProjectsOpen={isProjectsOpen}
         projects={projects}
+        userEmail={user?.email}
         onNavClick={handleNavClick}
         onToggleLanguage={toggleLanguage}
         onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -412,6 +431,7 @@ export default function TaskManager() {
         onProjectClick={handleProjectClick}
         onCreateProject={() => setShowCreateModal(true)}
         onDeleteProject={deleteProject}
+        onLogout={handleLogout}
         t={t}
       />
 

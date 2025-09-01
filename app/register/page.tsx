@@ -145,13 +145,40 @@ export default function RegisterPage() {
           }
         }
 
-        // Show success message instead of immediate redirect
-        alert(
-          currentLanguage === 'ka'
-            ? '✅ რეგისტრაცია წარმატებით დასრულდა! გთხოვთ შეამოწმოთ თქვენი ელ-ფოსტა დასადასტურებლად.'
-            : '✅ Registration successful! Please check your email for confirmation.'
-        );
-        router.push('/login');
+        // In development, if no session but user exists, try to sign in immediately
+        if (process.env.NODE_ENV === 'development' && !data.session) {
+          logger.log('🔄 Development mode: attempting auto-login after registration');
+          try {
+            const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+              email: email.trim().toLowerCase(),
+              password: password,
+            });
+            
+            if (signInError) {
+              logger.error('Auto-login failed:', signInError);
+              alert(
+                currentLanguage === 'ka'
+                  ? '✅ რეგისტრაცია დასრულდა! გთხოვთ შეამოწმოთ ელ-ფოსტა და შემდეგ შედით.'
+                  : '✅ Registration completed! Please check your email and then sign in.'
+              );
+              router.push('/login');
+            } else {
+              logger.log('✅ Auto-login successful');
+              router.push('/');
+            }
+          } catch (autoLoginError) {
+            logger.error('Auto-login catch error:', autoLoginError);
+            router.push('/login');
+          }
+        } else {
+          // Production or already has session
+          alert(
+            currentLanguage === 'ka'
+              ? '✅ რეგისტრაცია წარმატებით დასრულდა! გთხოვთ შეამოწმოთ თქვენი ელ-ფოსტა დასადასტურებლად.'
+              : '✅ Registration successful! Please check your email for confirmation.'
+          );
+          router.push('/login');
+        }
       }
     } catch (error) {
       logger.error('Registration error:', error);

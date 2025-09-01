@@ -1,6 +1,7 @@
 'use client';
 
 import { SimpleDropdown } from '../ui/SimpleDropdown';
+import { ProfileDropdown } from '../ui/ProfileDropdown';
 import type { Project } from '../../lib/supabase';
 
 interface SidebarProps {
@@ -9,6 +10,7 @@ interface SidebarProps {
   sidebarCollapsed: boolean;
   isProjectsOpen: boolean;
   projects: Project[];
+  userEmail?: string;
   onNavClick: (navId: string) => void;
   onToggleLanguage: () => void;
   onToggleSidebar: () => void;
@@ -16,6 +18,7 @@ interface SidebarProps {
   onProjectClick: (project: Project) => void;
   onCreateProject: () => void;
   onDeleteProject: (projectId: string) => void;
+  onLogout: () => void;
   t: (key: string) => string;
 }
 
@@ -25,6 +28,7 @@ export function Sidebar({
   sidebarCollapsed,
   isProjectsOpen,
   projects,
+  userEmail,
   onNavClick,
   onToggleLanguage,
   onToggleSidebar,
@@ -32,6 +36,7 @@ export function Sidebar({
   onProjectClick,
   onCreateProject,
   onDeleteProject,
+  onLogout,
   t,
 }: SidebarProps) {
   return (
@@ -42,9 +47,12 @@ export function Sidebar({
       <div className="sidebar-header">
         <div className="header-controls">
           <div className="profile-container">
-            <div className="profile-button" id="profileBtn">
-              <span className="profile-initials">👤</span>
-            </div>
+            <ProfileDropdown
+              userEmail={userEmail}
+              onLogout={onLogout}
+              currentLanguage={currentLanguage}
+              t={t}
+            />
           </div>
           <div className="language-button" onClick={onToggleLanguage}>
             <span>{currentLanguage.toUpperCase()}</span>

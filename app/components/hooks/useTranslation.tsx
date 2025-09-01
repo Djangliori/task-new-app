@@ -15,6 +15,7 @@ const translations = {
     appTitle: 'Task Manager',
     edit: 'რედაქტირება',
     delete: 'წაშლა',
+    logout: 'გასვლა',
 
     // Login Page
     login: 'შესვლა',
@@ -83,6 +84,7 @@ const translations = {
     appTitle: 'Task Manager',
     edit: 'Edit',
     delete: 'Delete',
+    logout: 'Logout',
 
     // Login Page
     login: 'Login',
