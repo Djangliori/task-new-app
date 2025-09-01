@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { supabase } from '../../lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 
 function ConfirmContent() {
   const router = useRouter();
@@ -17,6 +17,12 @@ function ConfirmContent() {
         const type = searchParams.get('type');
 
         if (token_hash && type) {
+          // Create supabase client only on client-side
+          const supabase = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+          );
+
           const { error } = await supabase.auth.verifyOtp({
             token_hash,
             type: type as 'signup',
