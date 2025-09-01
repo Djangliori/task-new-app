@@ -81,7 +81,9 @@ export default function RegisterPage() {
         email: email.trim().toLowerCase(),
         password: password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/confirm`,
+          emailRedirectTo: process.env.NODE_ENV === 'production' 
+            ? 'https://task-new-app.vercel.app/auth/confirm'
+            : `${window.location.origin}/auth/confirm`,
           data: {
             first_name: firstName.trim(),
             last_name: lastName.trim(),

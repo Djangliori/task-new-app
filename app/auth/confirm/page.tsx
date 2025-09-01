@@ -4,12 +4,21 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getSupabaseClient } from '../../lib/supabase';
 import { logger } from '../../lib/logger';
+import { useTranslation } from '../../components/hooks/useTranslation';
 
 function ConfirmContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [currentLanguage, setCurrentLanguage] = useState<'ka' | 'en'>('ka');
+  const { t } = useTranslation(currentLanguage);
   const [message, setMessage] = useState('მიმდინარეობს დადასტურება...');
   const [isSuccess, setIsSuccess] = useState(false);
+  
+  // Load language from localStorage
+  useEffect(() => {
+    const savedLanguage = (localStorage.getItem('language') as 'ka' | 'en') || 'ka';
+    setCurrentLanguage(savedLanguage);
+  }, []);
 
   useEffect(() => {
     const handleEmailConfirmation = async () => {
@@ -116,7 +125,7 @@ function ConfirmContent() {
               fontStyle: 'italic',
             }}
           >
-            3 წამში გადამისამართება შესვლის გვერდზე...
+            {t('redirectingToLogin')}
           </p>
         )}
 
@@ -134,7 +143,7 @@ function ConfirmContent() {
             marginTop: '16px',
           }}
         >
-          შესვლის გვერდზე გადასვლა
+          {t('goToLogin')}
         </button>
       </div>
     </div>

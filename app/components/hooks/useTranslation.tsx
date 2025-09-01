@@ -59,6 +59,15 @@ const translations = {
     high: 'მაღალი',
     medium: 'საშუალო',
     low: 'დაბალი',
+    
+    // Email Confirmation
+    emailConfirmation: 'ელ-ფოსტის დადასტურება',
+    confirming: 'მიმდინარეობს დადასტურება...',
+    emailConfirmed: '✅ ელ-ფოსტა წარმატებით დადასტურდა! ახლა შეგიძლიათ შემოხვიდეთ.',
+    confirmationError: 'დადასტურების შეცდომა. გთხოვთ ისევ სცადოთ.',
+    invalidLink: '❌ არასწორი დადასტურების ბმული.',
+    redirectingToLogin: '3 წამში გადამისამართება შესვლის გვერდზე...',
+    goToLogin: 'შესვლის გვერდზე გადასვლა',
   },
   en: {
     // Sidebar and Navigation
@@ -118,6 +127,15 @@ const translations = {
     high: 'High',
     medium: 'Medium',
     low: 'Low',
+    
+    // Email Confirmation
+    emailConfirmation: 'Email Confirmation',
+    confirming: 'Confirming...',
+    emailConfirmed: '✅ Email confirmed successfully! You can now sign in.',
+    confirmationError: 'Confirmation error. Please try again.',
+    invalidLink: '❌ Invalid confirmation link.',
+    redirectingToLogin: 'Redirecting to login page in 3 seconds...',
+    goToLogin: 'Go to Login',
   },
 };
 
