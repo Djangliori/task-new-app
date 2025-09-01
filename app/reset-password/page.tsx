@@ -34,9 +34,25 @@ function ResetPasswordForm() {
       (localStorage.getItem('language') as 'ka' | 'en') || 'ka';
     setCurrentLanguage(savedLanguage);
 
-    // Don't check tokens here - let the form submission handle validation
-    // This prevents showing error message before user even tries to submit
-  }, []);
+    // Debug: Log all URL parameters to console
+    const allParams = {};
+    for (const [key, value] of searchParams.entries()) {
+      allParams[key] = value;
+    }
+    logger.log('🔍 Reset page URL parameters:', allParams);
+    logger.log('🔗 Full URL:', window.location.href);
+
+    // Check specifically for Supabase auth parameters
+    const accessToken = searchParams.get('access_token');
+    const refreshToken = searchParams.get('refresh_token');
+    const type = searchParams.get('type');
+
+    logger.log('📝 Auth tokens:', {
+      access_token: accessToken ? 'EXISTS' : 'MISSING',
+      refresh_token: refreshToken ? 'EXISTS' : 'MISSING',
+      type: type || 'MISSING',
+    });
+  }, [searchParams]);
 
   const toggleLanguage = () => {
     const newLanguage = currentLanguage === 'ka' ? 'en' : 'ka';

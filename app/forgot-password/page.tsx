@@ -48,9 +48,11 @@ export default function ForgotPasswordPage() {
       // Create supabase client only when needed
       const supabase = getSupabaseClient();
 
-      // Get current domain for redirect URL with timestamp to ensure unique links
-      const timestamp = Date.now();
-      const redirectUrl = `${window.location.origin}/reset-password?t=${timestamp}`;
+      // Get current domain for redirect URL
+      const redirectUrl = `${window.location.origin}/reset-password`;
+
+      logger.log('🔧 Sending password reset to:', email);
+      logger.log('🔗 Redirect URL:', redirectUrl);
 
       const { error } = await supabase.auth.resetPasswordForEmail(
         email.trim().toLowerCase(),
@@ -58,6 +60,8 @@ export default function ForgotPasswordPage() {
           redirectTo: redirectUrl,
         }
       );
+
+      logger.log('📧 Password reset result:', { error: error || 'SUCCESS' });
 
       if (error) {
         logger.error('❌ Password reset error:', {
@@ -117,31 +121,37 @@ export default function ForgotPasswordPage() {
               fontSize: '16px',
             }}
           >
-            {t('enterEmailForReset')}
+            {isSuccess
+              ? currentLanguage === 'ka'
+                ? 'აღდგენის ბმული გაგზავნილია თქვენს ელ-ფოსტაზე'
+                : 'Reset link has been sent to your email'
+              : t('enterEmailForReset')}
           </div>
 
-          <UnifiedInput
-            label={t('email')}
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder={t('emailPlaceholder')}
-            required
-            error={
-              email.length > 0 && !email.includes('@')
-                ? currentLanguage === 'ka'
-                  ? 'სწორი ემაილის ფორმატი'
-                  : 'Valid email format required'
-                : undefined
-            }
-            success={
-              email.includes('@') && email.includes('.')
-                ? currentLanguage === 'ka'
-                  ? 'სწორი ემაილი'
-                  : 'Valid email'
-                : undefined
-            }
-          />
+          {!isSuccess && (
+            <UnifiedInput
+              label={t('email')}
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder={t('emailPlaceholder')}
+              required
+              error={
+                email.length > 0 && !email.includes('@')
+                  ? currentLanguage === 'ka'
+                    ? 'სწორი ემაილის ფორმატი'
+                    : 'Valid email format required'
+                  : undefined
+              }
+              success={
+                email.includes('@') && email.includes('.')
+                  ? currentLanguage === 'ka'
+                    ? 'სწორი ემაილი'
+                    : 'Valid email'
+                  : undefined
+              }
+            />
+          )}
 
           {error && (
             <div
@@ -194,14 +204,16 @@ export default function ForgotPasswordPage() {
             </div>
           )}
 
-          <UnifiedButton
-            type="submit"
-            variant="primary"
-            disabled={isLoading || !email.trim()}
-            isLoading={isLoading}
-          >
-            {isLoading ? t('sendingEmail') : t('sendResetEmail')}
-          </UnifiedButton>
+          {!isSuccess && (
+            <UnifiedButton
+              type="submit"
+              variant="primary"
+              disabled={isLoading || !email.trim()}
+              isLoading={isLoading}
+            >
+              {isLoading ? t('sendingEmail') : t('sendResetEmail')}
+            </UnifiedButton>
+          )}
 
           {isSuccess && (
             <button
@@ -209,17 +221,26 @@ export default function ForgotPasswordPage() {
               onClick={() => {
                 setIsSuccess(false);
                 setError('');
+                // Show email field again for new request
               }}
               style={{
                 marginTop: '12px',
-                padding: '8px 16px',
-                background: 'transparent',
-                color: '#4da8da',
-                border: '1px solid #4da8da',
-                borderRadius: '6px',
+                padding: '12px 24px',
+                background: '#4da8da',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
                 cursor: 'pointer',
-                fontSize: '14px',
+                fontSize: '16px',
+                fontWeight: '600',
                 width: '100%',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseOver={(e) => {
+                (e.target as HTMLButtonElement).style.background = '#3498db';
+              }}
+              onMouseOut={(e) => {
+                (e.target as HTMLButtonElement).style.background = '#4da8da';
               }}
             >
               {currentLanguage === 'ka'
