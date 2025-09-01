@@ -4,10 +4,21 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Sidebar } from './components/layout/Sidebar';
 import { MainContent } from './components/layout/MainContent';
-import { ProjectModal } from './components/forms/ProjectModal';
-import { ConfirmationModal } from './components/forms/ConfirmationModal';
 import { useTranslation } from './components/hooks/useTranslation';
-import { AddTaskModal } from './components/forms/AddTaskModal';
+import dynamic from 'next/dynamic';
+
+// Lazy load modals to reduce initial bundle size
+const ProjectModal = dynamic(() => import('./components/forms/ProjectModal').then(mod => ({ default: mod.ProjectModal })), {
+  ssr: false
+});
+
+const ConfirmationModal = dynamic(() => import('./components/forms/ConfirmationModal').then(mod => ({ default: mod.ConfirmationModal })), {
+  ssr: false
+});
+
+const AddTaskModal = dynamic(() => import('./components/forms/AddTaskModal').then(mod => ({ default: mod.AddTaskModal })), {
+  ssr: false
+});
 import type { Project, Task } from './lib/supabase';
 import { getSupabaseClient } from './lib/supabase';
 import { logger } from './lib/logger';
@@ -63,47 +74,48 @@ export default function TaskManager() {
         } = await supabase.auth.getSession();
 
         if (!session) {
-          router.push('/login');
+          // Immediate redirect to login - no loading screen
+          router.replace('/login');
           return;
         }
 
         setUser(session.user);
         await loadUserData(session.user.id);
+        setLoading(false);
       } catch (error) {
         logger.error('Auth error:', error);
-        router.push('/login');
-      } finally {
-        setLoading(false);
+        router.replace('/login');
       }
     };
 
     checkUser();
   }, [router]);
 
-  // Load user data from Supabase
+  // Load user data from Supabase - parallel queries for better performance
   const loadUserData = async (userId: string) => {
     try {
       const supabase = getSupabaseClient();
 
-      // Load projects
-      const { data: projectsData, error: projectsError } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: true });
+      // Load projects and tasks in parallel for faster loading
+      const [projectsResult, tasksResult] = await Promise.all([
+        supabase
+          .from('projects')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: true }),
+        supabase
+          .from('tasks')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false })
+      ]);
 
-      if (projectsError) throw projectsError;
-      setProjects(projectsData || []);
+      if (projectsResult.error) throw projectsResult.error;
+      if (tasksResult.error) throw tasksResult.error;
 
-      // Load tasks
-      const { data: tasksData, error: tasksError } = await supabase
-        .from('tasks')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
-
-      if (tasksError) throw tasksError;
-      setTasks(tasksData || []);
+      // Update state with loaded data
+      setProjects(projectsResult.data || []);
+      setTasks(tasksResult.data || []);
 
       // Load UI preferences from localStorage
       const savedNav = localStorage.getItem('task-manager-nav');
@@ -397,22 +409,9 @@ export default function TaskManager() {
     }
   };
 
-  // Show loading screen while authenticating
-  if (loading) {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '100vh',
-          fontSize: '18px',
-          color: '#666',
-        }}
-      >
-        {currentLanguage === 'ka' ? 'იტვირთება...' : 'Loading...'}
-      </div>
-    );
+  // Only show loading if we have a user but data is still loading
+  if (loading || !user) {
+    return null; // Don't render anything while checking auth/redirecting
   }
 
   return (

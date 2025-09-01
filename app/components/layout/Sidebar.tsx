@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { SimpleDropdown } from '../ui/SimpleDropdown';
 import { ProfileDropdown } from '../ui/ProfileDropdown';
 import type { Project } from '../../lib/supabase';
@@ -22,7 +23,7 @@ interface SidebarProps {
   t: (key: string) => string;
 }
 
-export function Sidebar({
+export const Sidebar = React.memo<SidebarProps>(function Sidebar({
   activeNavItem,
   currentLanguage,
   sidebarCollapsed,
@@ -38,7 +39,7 @@ export function Sidebar({
   onDeleteProject,
   onLogout,
   t,
-}: SidebarProps) {
+}) {
   return (
     <div
       className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}
@@ -170,4 +171,4 @@ export function Sidebar({
       </div>
     </div>
   );
-}
+});
