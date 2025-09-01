@@ -97,7 +97,7 @@ export default function TaskManager() {
           return;
         }
 
-        // Get user profile from users table  
+        // Get user profile from users table
         const { data: userData, error: userError } = await supabase
           .from('users')
           .select('*')
