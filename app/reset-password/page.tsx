@@ -34,15 +34,9 @@ function ResetPasswordForm() {
       (localStorage.getItem('language') as 'ka' | 'en') || 'ka';
     setCurrentLanguage(savedLanguage);
 
-    // Check if we have the necessary query parameters from email link
-    const accessToken = searchParams.get('access_token');
-    const refreshToken = searchParams.get('refresh_token');
-
-    if (!accessToken || !refreshToken) {
-      setMessage(t('invalidResetLink'));
-      setIsSuccess(false);
-    }
-  }, [searchParams, t]);
+    // Don't check tokens here - let the form submission handle validation
+    // This prevents showing error message before user even tries to submit
+  }, []);
 
   const toggleLanguage = () => {
     const newLanguage = currentLanguage === 'ka' ? 'en' : 'ka';
@@ -89,7 +83,11 @@ function ResetPasswordForm() {
       const refreshToken = searchParams.get('refresh_token');
 
       if (!accessToken || !refreshToken) {
-        setMessage(t('invalidResetLink'));
+        setMessage(
+          currentLanguage === 'ka'
+            ? 'პაროლის აღდგენისთვის გამოიყენეთ ბმული ელ-ფოსტიდან'
+            : 'Please use the reset link from your email'
+        );
         setIsSuccess(false);
         setIsLoading(false);
         return;
@@ -103,7 +101,11 @@ function ResetPasswordForm() {
 
       if (sessionError) {
         logger.error('Session error:', sessionError);
-        setMessage(t('invalidResetLink'));
+        setMessage(
+          currentLanguage === 'ka'
+            ? 'ბმული ვადაგასულია ან არასწორია. ახალი ბმული მოითხოვეთ'
+            : 'Reset link is expired or invalid. Please request a new link'
+        );
         setIsSuccess(false);
         setIsLoading(false);
         return;
@@ -127,7 +129,11 @@ function ResetPasswordForm() {
 
       if (verifyError) {
         logger.error('Old password verification failed:', verifyError);
-        setMessage(t('invalidOldPassword'));
+        setMessage(
+          currentLanguage === 'ka'
+            ? '❌ შეყვანილი ძველი პაროლი არასწორია'
+            : '❌ The old password you entered is incorrect'
+        );
         setIsSuccess(false);
         setIsLoading(false);
         return;
@@ -208,6 +214,26 @@ function ResetPasswordForm() {
               ? 'ჯერ შეიყვანეთ ძველი პაროლი, შემდეგ ახალი'
               : 'First enter your old password, then new password'}
           </div>
+
+          {!searchParams.get('access_token') && !message && (
+            <div
+              style={{
+                background: '#e8f4fd',
+                color: '#2c3e50',
+                padding: '12px 16px',
+                borderRadius: '8px',
+                fontSize: '14px',
+                border: '1px solid #4da8da',
+                marginBottom: '20px',
+                textAlign: 'center',
+              }}
+            >
+              ℹ️{' '}
+              {currentLanguage === 'ka'
+                ? 'ეს გვერდი მუშაობს მხოლოდ ელ-ფოსტიდან ბმულის გამოყენებით'
+                : 'This page only works when accessed from an email link'}
+            </div>
+          )}
 
           <div>
             <UnifiedInput
