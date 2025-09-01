@@ -8,17 +8,35 @@ import { useTranslation } from './components/hooks/useTranslation';
 import dynamic from 'next/dynamic';
 
 // Lazy load modals to reduce initial bundle size
-const ProjectModal = dynamic(() => import('./components/forms/ProjectModal').then(mod => ({ default: mod.ProjectModal })), {
-  ssr: false
-});
+const ProjectModal = dynamic(
+  () =>
+    import('./components/forms/ProjectModal').then((mod) => ({
+      default: mod.ProjectModal,
+    })),
+  {
+    ssr: false,
+  }
+);
 
-const ConfirmationModal = dynamic(() => import('./components/forms/ConfirmationModal').then(mod => ({ default: mod.ConfirmationModal })), {
-  ssr: false
-});
+const ConfirmationModal = dynamic(
+  () =>
+    import('./components/forms/ConfirmationModal').then((mod) => ({
+      default: mod.ConfirmationModal,
+    })),
+  {
+    ssr: false,
+  }
+);
 
-const AddTaskModal = dynamic(() => import('./components/forms/AddTaskModal').then(mod => ({ default: mod.AddTaskModal })), {
-  ssr: false
-});
+const AddTaskModal = dynamic(
+  () =>
+    import('./components/forms/AddTaskModal').then((mod) => ({
+      default: mod.AddTaskModal,
+    })),
+  {
+    ssr: false,
+  }
+);
 import type { Project, Task } from './lib/supabase';
 import { getSupabaseClient } from './lib/supabase';
 import { logger } from './lib/logger';
@@ -107,7 +125,7 @@ export default function TaskManager() {
           .from('tasks')
           .select('*')
           .eq('user_id', userId)
-          .order('created_at', { ascending: false })
+          .order('created_at', { ascending: false }),
       ]);
 
       if (projectsResult.error) throw projectsResult.error;
