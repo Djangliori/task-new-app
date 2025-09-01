@@ -13,10 +13,11 @@ function ConfirmContent() {
   const { t } = useTranslation(currentLanguage);
   const [message, setMessage] = useState('მიმდინარეობს დადასტურება...');
   const [isSuccess, setIsSuccess] = useState(false);
-  
+
   // Load language from localStorage
   useEffect(() => {
-    const savedLanguage = (localStorage.getItem('language') as 'ka' | 'en') || 'ka';
+    const savedLanguage =
+      (localStorage.getItem('language') as 'ka' | 'en') || 'ka';
     setCurrentLanguage(savedLanguage);
   }, []);
 

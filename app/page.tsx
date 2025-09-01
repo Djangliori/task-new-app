@@ -185,12 +185,12 @@ export default function TaskManager() {
     try {
       const supabase = getSupabaseClient();
       await supabase.auth.signOut();
-      
+
       // Clear local state
       setUser(null);
       setProjects([]);
       setTasks([]);
-      
+
       // Redirect to login
       router.push('/login');
     } catch (error) {

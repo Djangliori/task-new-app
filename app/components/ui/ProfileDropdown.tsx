@@ -11,7 +11,6 @@ interface ProfileDropdownProps {
 export function ProfileDropdown({
   userEmail,
   onLogout,
-  currentLanguage,
   t,
 }: ProfileDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);

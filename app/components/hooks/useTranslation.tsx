@@ -60,11 +60,12 @@ const translations = {
     high: 'მაღალი',
     medium: 'საშუალო',
     low: 'დაბალი',
-    
+
     // Email Confirmation
     emailConfirmation: 'ელ-ფოსტის დადასტურება',
     confirming: 'მიმდინარეობს დადასტურება...',
-    emailConfirmed: '✅ ელ-ფოსტა წარმატებით დადასტურდა! ახლა შეგიძლიათ შემოხვიდეთ.',
+    emailConfirmed:
+      '✅ ელ-ფოსტა წარმატებით დადასტურდა! ახლა შეგიძლიათ შემოხვიდეთ.',
     confirmationError: 'დადასტურების შეცდომა. გთხოვთ ისევ სცადოთ.',
     invalidLink: '❌ არასწორი დადასტურების ბმული.',
     redirectingToLogin: '3 წამში გადამისამართება შესვლის გვერდზე...',
@@ -129,7 +130,7 @@ const translations = {
     high: 'High',
     medium: 'Medium',
     low: 'Low',
-    
+
     // Email Confirmation
     emailConfirmation: 'Email Confirmation',
     confirming: 'Confirming...',

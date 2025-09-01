@@ -81,9 +81,10 @@ export default function RegisterPage() {
         email: email.trim().toLowerCase(),
         password: password,
         options: {
-          emailRedirectTo: process.env.NODE_ENV === 'production' 
-            ? 'https://task-new-app.vercel.app/auth/confirm'
-            : `${window.location.origin}/auth/confirm`,
+          emailRedirectTo:
+            process.env.NODE_ENV === 'production'
+              ? 'https://task-new-app.vercel.app/auth/confirm'
+              : `${window.location.origin}/auth/confirm`,
           data: {
             first_name: firstName.trim(),
             last_name: lastName.trim(),
@@ -147,13 +148,16 @@ export default function RegisterPage() {
 
         // In development, if no session but user exists, try to sign in immediately
         if (process.env.NODE_ENV === 'development' && !data.session) {
-          logger.log('🔄 Development mode: attempting auto-login after registration');
+          logger.log(
+            '🔄 Development mode: attempting auto-login after registration'
+          );
           try {
-            const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-              email: email.trim().toLowerCase(),
-              password: password,
-            });
-            
+            const { error: signInError } =
+              await supabase.auth.signInWithPassword({
+                email: email.trim().toLowerCase(),
+                password: password,
+              });
+
             if (signInError) {
               logger.error('Auto-login failed:', signInError);
               alert(
