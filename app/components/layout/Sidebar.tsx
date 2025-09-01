@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import { memo } from 'react';
 import { SimpleDropdown } from '../ui/SimpleDropdown';
 import { ProfileDropdown } from '../ui/ProfileDropdown';
 import type { Project } from '../../lib/supabase';
@@ -23,7 +23,7 @@ interface SidebarProps {
   t: (key: string) => string;
 }
 
-export const Sidebar = React.memo<SidebarProps>(function Sidebar({
+export const Sidebar = memo<SidebarProps>(function Sidebar({
   activeNavItem,
   currentLanguage,
   sidebarCollapsed,

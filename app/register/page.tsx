@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { CenterWrapper } from '../components/ui/CenterWrapper';
 import {
@@ -72,7 +72,6 @@ export default function RegisterPage() {
 
     try {
       // Sign up with Supabase Auth (disable email confirmation for development)
-      logger.log('🔄 Starting registration for:', email.trim().toLowerCase());
 
       // Create supabase client only when needed
       const supabase = getSupabaseClient();
@@ -90,12 +89,6 @@ export default function RegisterPage() {
             last_name: lastName.trim(),
           },
         },
-      });
-
-      logger.log('📊 Registration result:', {
-        user: data.user?.id,
-        session: data.session?.access_token ? 'YES' : 'NO',
-        error: error?.message,
       });
 
       if (error) {
@@ -120,9 +113,7 @@ export default function RegisterPage() {
             }),
           });
 
-          if (response.ok) {
-            logger.log('✅ Profile created successfully via API for:', email);
-          } else {
+          if (!response.ok) {
             const error = await response.text();
             logger.error('❌ Profile API creation failed:', error);
           }
@@ -142,7 +133,6 @@ export default function RegisterPage() {
           if (profileError) {
             logger.error('❌ Direct profile creation FAILED:', profileError);
           } else {
-            logger.log('✅ Direct profile created successfully for:', email);
           }
         }
 

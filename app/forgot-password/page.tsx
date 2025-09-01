@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { CenterWrapper } from '../components/ui/CenterWrapper';
 import {
   UnifiedForm,
@@ -40,19 +40,11 @@ export default function ForgotPasswordPage() {
     setError('');
 
     try {
-      logger.log('🔐 Attempting password reset for:', {
-        email: email.trim().toLowerCase(),
-        timestamp: new Date().toISOString(),
-      });
-
       // Create supabase client only when needed
       const supabase = getSupabaseClient();
 
       // Get current domain for redirect URL
       const redirectUrl = `${window.location.origin}/reset-password`;
-
-      logger.log('🔧 Sending password reset to:', email);
-      logger.log('🔗 Redirect URL:', redirectUrl);
 
       const { error } = await supabase.auth.resetPasswordForEmail(
         email.trim().toLowerCase(),
@@ -61,17 +53,10 @@ export default function ForgotPasswordPage() {
         }
       );
 
-      logger.log('📧 Password reset result:', { error: error || 'SUCCESS' });
-
       if (error) {
-        logger.error('❌ Password reset error:', {
-          message: error.message,
-          status: error.status,
-          details: error,
-        });
+        logger.error('❌ Password reset error:', error.message);
         setError(t('passwordUpdateError'));
       } else {
-        logger.log('✅ Password reset email sent to:', email);
         setIsSuccess(true);
         setEmail(''); // Clear the email field
       }

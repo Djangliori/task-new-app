@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { CenterWrapper } from '../components/ui/CenterWrapper';
 import {
@@ -58,26 +58,17 @@ export default function LoginPage() {
 
     try {
       const loginEmail = username.trim().toLowerCase();
-      logger.log('🔐 Attempting login with:', {
-        email: loginEmail,
-        passwordLength: password.length,
-        timestamp: new Date().toISOString(),
-      });
 
       // Create supabase client only when needed
       const supabase = getSupabaseClient();
 
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: username.trim().toLowerCase(),
+        email: loginEmail,
         password: password,
       });
 
       if (error) {
-        logger.error('❌ Supabase Auth Error:', {
-          message: error.message,
-          status: error.status,
-          details: error,
-        });
+        logger.error('❌ Supabase Auth Error:', error.message);
 
         if (error.message.includes('Email not confirmed')) {
           setError(
@@ -95,7 +86,6 @@ export default function LoginPage() {
           setError(t('errorWrongCredentials'));
         }
       } else if (data.user) {
-        logger.log('✅ Login successful for:', data.user.email);
         router.push('/');
       }
     } catch (error) {

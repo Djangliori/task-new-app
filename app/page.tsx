@@ -185,12 +185,9 @@ export default function TaskManager() {
       setShowAddTaskModal(true);
     } else {
       setActiveNavItem(navId);
-      // Clear selected project when navigating to other sections
       setSelectedProject(null);
     }
   };
-
-  // Project menu handlers
 
   const deleteProject = (projectId: string) => {
     setProjectToDelete(projectId);

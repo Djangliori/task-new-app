@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { CenterWrapper } from '../components/ui/CenterWrapper';
 import {
@@ -23,6 +23,7 @@ function ResetPasswordForm() {
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [hasValidTokens, setHasValidTokens] = useState(false);
 
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -30,28 +31,33 @@ function ResetPasswordForm() {
 
   // Load language on component mount
   useEffect(() => {
-    const savedLanguage =
-      (localStorage.getItem('language') as 'ka' | 'en') || 'ka';
-    setCurrentLanguage(savedLanguage);
+    try {
+      const savedLanguage =
+        (localStorage.getItem('language') as 'ka' | 'en') || 'ka';
+      setCurrentLanguage(savedLanguage);
 
-    // Debug: Log all URL parameters to console
-    const allParams = {};
-    for (const [key, value] of searchParams.entries()) {
-      allParams[key] = value;
+      // Parse tokens from URL hash instead of query parameters
+      // Supabase delivers tokens in hash fragments (#) not query params (?)
+      const hashParams = {};
+      if (typeof window !== 'undefined' && window.location.hash) {
+        const hash = window.location.hash.substring(1); // Remove the #
+        const params = new URLSearchParams(hash);
+        for (const [key, value] of params.entries()) {
+          hashParams[key] = value;
+        }
+      }
+
+      logger.log('🔍 URL hash parameters:', hashParams);
+
+      // Check for auth tokens in hash params (where Supabase actually puts them)
+      const accessToken = hashParams['access_token'] || null;
+      const refreshToken = hashParams['refresh_token'] || null;
+
+      // Update state to track if we have valid tokens
+      setHasValidTokens(!!(accessToken && refreshToken));
+    } catch (error) {
+      logger.error('❌ Error in useEffect:', error);
     }
-    logger.log('🔍 Reset page URL parameters:', allParams);
-    logger.log('🔗 Full URL:', window.location.href);
-
-    // Check specifically for Supabase auth parameters
-    const accessToken = searchParams.get('access_token');
-    const refreshToken = searchParams.get('refresh_token');
-    const type = searchParams.get('type');
-
-    logger.log('📝 Auth tokens:', {
-      access_token: accessToken ? 'EXISTS' : 'MISSING',
-      refresh_token: refreshToken ? 'EXISTS' : 'MISSING',
-      type: type || 'MISSING',
-    });
   }, [searchParams]);
 
   const toggleLanguage = () => {
@@ -94,9 +100,16 @@ function ResetPasswordForm() {
     try {
       const supabase = getSupabaseClient();
 
-      // Get the access token from URL parameters
-      const accessToken = searchParams.get('access_token');
-      const refreshToken = searchParams.get('refresh_token');
+      // Get the access token from URL hash (where Supabase actually puts them)
+      let accessToken = null;
+      let refreshToken = null;
+
+      if (typeof window !== 'undefined' && window.location.hash) {
+        const hash = window.location.hash.substring(1);
+        const params = new URLSearchParams(hash);
+        accessToken = params.get('access_token');
+        refreshToken = params.get('refresh_token');
+      }
 
       if (!accessToken || !refreshToken) {
         setMessage(
@@ -231,7 +244,7 @@ function ResetPasswordForm() {
               : 'First enter your old password, then new password'}
           </div>
 
-          {!searchParams.get('access_token') && !message && (
+          {!hasValidTokens && !message && (
             <div
               style={{
                 background: '#e8f4fd',
