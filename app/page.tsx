@@ -8,8 +8,16 @@ import { ProjectModal } from './components/forms/ProjectModal';
 import { ConfirmationModal } from './components/forms/ConfirmationModal';
 import { useTranslation } from './components/hooks/useTranslation';
 import { AddTaskModal } from './components/forms/AddTaskModal';
-import { supabase } from './lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 import type { Project, Task } from './lib/supabase';
+
+// Helper function to create Supabase client
+const getSupabaseClient = () => {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+};
 
 export default function TaskManager() {
   // React State Management
@@ -56,6 +64,7 @@ export default function TaskManager() {
   useEffect(() => {
     const checkUser = async () => {
       try {
+        const supabase = getSupabaseClient();
         const {
           data: { session },
         } = await supabase.auth.getSession();
@@ -81,6 +90,8 @@ export default function TaskManager() {
   // Load user data from Supabase
   const loadUserData = async (userId: string) => {
     try {
+      const supabase = getSupabaseClient();
+
       // Load projects
       const { data: projectsData, error: projectsError } = await supabase
         .from('projects')
@@ -153,6 +164,7 @@ export default function TaskManager() {
   const confirmDelete = async () => {
     if (projectToDelete && user) {
       try {
+        const supabase = getSupabaseClient();
         const { error } = await supabase
           .from('projects')
           .delete()
@@ -178,6 +190,7 @@ export default function TaskManager() {
   const createProject = async () => {
     if (newProjectName.trim() && user) {
       try {
+        const supabase = getSupabaseClient();
         const { data, error } = await supabase
           .from('projects')
           .insert([
@@ -217,6 +230,7 @@ export default function TaskManager() {
     const updatedIsOpen = !project.is_open;
 
     try {
+      const supabase = getSupabaseClient();
       const { error } = await supabase
         .from('projects')
         .update({ is_open: updatedIsOpen })
@@ -243,6 +257,7 @@ export default function TaskManager() {
     if (!user) return;
 
     try {
+      const supabase = getSupabaseClient();
       const { data, error } = await supabase
         .from('tasks')
         .insert([
@@ -275,6 +290,7 @@ export default function TaskManager() {
     if (!user) return;
 
     try {
+      const supabase = getSupabaseClient();
       const { data, error } = await supabase
         .from('tasks')
         .insert([
@@ -307,6 +323,7 @@ export default function TaskManager() {
     if (!user) return;
 
     try {
+      const supabase = getSupabaseClient();
       const { error } = await supabase
         .from('tasks')
         .update({ name: newName, priority: newPriority })
@@ -331,6 +348,7 @@ export default function TaskManager() {
     if (!user) return;
 
     try {
+      const supabase = getSupabaseClient();
       const { error } = await supabase
         .from('tasks')
         .delete()
@@ -349,6 +367,7 @@ export default function TaskManager() {
     if (!user) return;
 
     try {
+      const supabase = getSupabaseClient();
       const { error } = await supabase
         .from('tasks')
         .update({ completed: !completed })
