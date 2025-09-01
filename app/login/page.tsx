@@ -257,8 +257,29 @@ export default function LoginPage() {
             style={{
               marginTop: '24px',
               textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
             }}
           >
+            <a
+              href="/forgot-password"
+              style={{
+                color: '#7f8c8d',
+                textDecoration: 'none',
+                fontSize: '14px',
+                fontWeight: '400',
+                transition: 'color 0.2s ease',
+              }}
+              onMouseOver={(e) =>
+                ((e.target as HTMLElement).style.color = '#4da8da')
+              }
+              onMouseOut={(e) =>
+                ((e.target as HTMLElement).style.color = '#7f8c8d')
+              }
+            >
+              {t('forgotPassword')}
+            </a>
             <a
               href="/register"
               style={{
