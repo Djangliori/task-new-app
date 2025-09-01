@@ -1,15 +1,21 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+function getSupabaseAdmin() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false,
-  },
-});
+  if (!supabaseUrl || !supabaseServiceRoleKey) {
+    throw new Error('Missing required Supabase environment variables');
+  }
+
+  return createClient(supabaseUrl, supabaseServiceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,6 +29,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create user profile using service role (bypasses RLS)
+    const supabaseAdmin = getSupabaseAdmin();
     const { error: profileError } = await supabaseAdmin.from('users').insert([
       {
         id: userId,
