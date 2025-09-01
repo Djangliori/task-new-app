@@ -8,6 +8,7 @@ import {
   UnifiedInput,
   UnifiedButton,
 } from '../components/ui/UnifiedForm';
+import { supabase } from '../lib/supabase';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -48,52 +49,24 @@ export default function LoginPage() {
   const t = (key: keyof typeof translations.ka) =>
     translations[currentLanguage][key];
 
-  // Load language and check auto-login on mount
+  // Load language and check if user is already logged in
   useEffect(() => {
     const savedLanguage =
       (localStorage.getItem('language') as 'ka' | 'en') || 'ka';
     setCurrentLanguage(savedLanguage);
 
-    // Check if user is already logged in
-    const isAuthenticated = localStorage.getItem('isAuthenticated');
-    if (isAuthenticated === 'true') {
-      router.push('/');
-      return;
-    }
-
-    // Auto-fill with saved credentials if available
-    const savedCredentials = localStorage.getItem('savedCredentials');
-    if (savedCredentials) {
-      try {
-        const { email, password } = JSON.parse(savedCredentials);
-        setUsername(email);
-        setPassword(password);
-        // Will auto-login after handleAutoLogin is defined
-      } catch {
-        // If parsing fails, clear saved credentials
-        localStorage.removeItem('savedCredentials');
+    // Check if user is already logged in with Supabase
+    const checkAuth = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session) {
+        router.push('/');
       }
-    }
+    };
 
-    // Add default user to localStorage if not exists
-    const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
-    const defaultUserExists = existingUsers.find(
-      (u: { email: string }) => u.email === 'mangalashvili@gmail.com'
-    );
-
-    if (!defaultUserExists) {
-      const updatedUsers = [
-        ...existingUsers,
-        {
-          email: 'mangalashvili@gmail.com',
-          password: 'Erekle2003',
-          firstName: 'Erekle',
-          lastName: 'Mangalashvili',
-        },
-      ];
-      localStorage.setItem('users', JSON.stringify(updatedUsers));
-    }
-  }, []);
+    checkAuth();
+  }, [router]);
 
   const toggleLanguage = () => {
     const newLanguage = currentLanguage === 'ka' ? 'en' : 'ka';
@@ -106,44 +79,21 @@ export default function LoginPage() {
     setIsLoading(true);
     setError('');
 
-    // Check existing users in localStorage
-    const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
-    const user = existingUsers.find(
-      (u: { email: string; password: string }) =>
-        u.email === username && u.password === password
-    );
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: username,
+        password: password,
+      });
 
-    if (user) {
-      // Save to localStorage
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('currentUser', JSON.stringify(user));
-      // Save credentials for next time
-      localStorage.setItem(
-        'savedCredentials',
-        JSON.stringify({ email: username, password })
-      );
-      // Redirect to main page
-      router.push('/');
-    } else {
-      // Test account ჯერ კიდევ მუშაობს
-      if (username === 'admin@test.com' && password === 'password') {
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem(
-          'currentUser',
-          JSON.stringify({
-            email: 'admin@test.com',
-            firstName: 'Admin',
-            lastName: 'User',
-          })
-        );
-        localStorage.setItem(
-          'savedCredentials',
-          JSON.stringify({ email: username, password })
-        );
-        router.push('/');
-      } else {
+      if (error) {
         setError(t('errorWrongCredentials'));
+      } else if (data.user) {
+        // Successfully logged in
+        router.push('/');
       }
+    } catch (error) {
+      console.error('Login error:', error);
+      setError(t('errorWrongCredentials'));
     }
 
     setIsLoading(false);

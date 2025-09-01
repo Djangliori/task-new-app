@@ -1,49 +1,33 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Sidebar } from './components/layout/Sidebar';
 import { MainContent } from './components/layout/MainContent';
 import { ProjectModal } from './components/forms/ProjectModal';
 import { ConfirmationModal } from './components/forms/ConfirmationModal';
 import { useTranslation } from './components/hooks/useTranslation';
 import { AddTaskModal } from './components/forms/AddTaskModal';
+import { supabase } from './lib/supabase';
+import type { Project, Task } from './lib/supabase';
 
 export default function TaskManager() {
   // React State Management
+  const router = useRouter();
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [activeNavItem, setActiveNavItem] = useState('homeNav');
   const [currentLanguage, setCurrentLanguage] = useState<'ka' | 'en'>('ka');
   const [isProjectsOpen, setIsProjectsOpen] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [projectToDelete, setProjectToDelete] = useState<number | null>(null);
+  const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
   const [newProjectName, setNewProjectName] = useState('');
-  const [projects, setProjects] = useState<
-    Array<{ id: number; name: string; isOpen: boolean }>
-  >([]);
-  const [tasks, setTasks] = useState<
-    Array<{
-      id: number;
-      name: string;
-      priority: 'high' | 'medium' | 'low';
-      completed: boolean;
-      createdAt: string;
-      dueDate?: string;
-    }>
-  >([]);
-  const [projectTasks, setProjectTasks] = useState<
-    Array<{
-      id: number;
-      name: string;
-      priority: 'high' | 'medium' | 'low';
-      completed: boolean;
-      createdAt: string;
-      projectId: number;
-      dueDate?: string;
-    }>
-  >([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState<{
-    id: number;
+    id: string;
     name: string;
   } | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -55,86 +39,88 @@ export default function TaskManager() {
     setCurrentLanguage(savedLanguage);
   }, []);
 
-  // Save data to localStorage (debounced)
+  // Save UI preferences to localStorage (debounced)
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      localStorage.setItem('task-manager-projects', JSON.stringify(projects));
-      localStorage.setItem('task-manager-tasks', JSON.stringify(tasks));
-      localStorage.setItem(
-        'task-manager-project-tasks',
-        JSON.stringify(projectTasks)
-      );
       localStorage.setItem('task-manager-nav', activeNavItem);
       localStorage.setItem(
         'task-manager-projects-open',
         JSON.stringify(isProjectsOpen)
       );
-    }, 100); // Reduced delay from 300ms to 100ms
+    }, 100);
 
     return () => clearTimeout(timeoutId);
-  }, [projects, tasks, projectTasks, activeNavItem, isProjectsOpen]);
+  }, [activeNavItem, isProjectsOpen]);
 
-  // Authentication check and load data from localStorage after hydration
+  // Authentication check and load data from Supabase
   useEffect(() => {
-    const isAuthenticated = localStorage.getItem('isAuthenticated');
-
-    // If not authenticated, redirect to login
-    if (!isAuthenticated || isAuthenticated !== 'true') {
-      window.location.href = '/login';
-      return;
-    }
-
-    const savedNav = localStorage.getItem('task-manager-nav');
-    if (savedNav) {
-      setActiveNavItem(savedNav);
-    }
-
-    const savedProjects = localStorage.getItem('task-manager-projects');
-    if (savedProjects) {
+    const checkUser = async () => {
       try {
-        const parsed = JSON.parse(savedProjects);
-        setProjects(parsed);
-      } catch {
-        // Keep empty array if parsing fails
-        setProjects([]);
-      }
-    }
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-    const savedTasks = localStorage.getItem('task-manager-tasks');
-    if (savedTasks) {
-      try {
-        const parsed = JSON.parse(savedTasks);
-        setTasks(parsed);
-      } catch {
-        // Keep empty array if parsing fails
-        setTasks([]);
-      }
-    }
+        if (!session) {
+          router.push('/login');
+          return;
+        }
 
-    const savedProjectTasks = localStorage.getItem(
-      'task-manager-project-tasks'
-    );
-    if (savedProjectTasks) {
-      try {
-        const parsed = JSON.parse(savedProjectTasks);
-        setProjectTasks(parsed);
-      } catch {
-        // Keep empty array if parsing fails
-        setProjectTasks([]);
+        setUser(session.user);
+        await loadUserData(session.user.id);
+      } catch (error) {
+        console.error('Auth error:', error);
+        router.push('/login');
+      } finally {
+        setLoading(false);
       }
-    }
+    };
 
-    const savedProjectsOpen = localStorage.getItem(
-      'task-manager-projects-open'
-    );
-    if (savedProjectsOpen) {
-      try {
-        setIsProjectsOpen(JSON.parse(savedProjectsOpen));
-      } catch {
-        // Keep default false
+    checkUser();
+  }, [router]);
+
+  // Load user data from Supabase
+  const loadUserData = async (userId: string) => {
+    try {
+      // Load projects
+      const { data: projectsData, error: projectsError } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: true });
+
+      if (projectsError) throw projectsError;
+      setProjects(projectsData || []);
+
+      // Load tasks
+      const { data: tasksData, error: tasksError } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (tasksError) throw tasksError;
+      setTasks(tasksData || []);
+
+      // Load UI preferences from localStorage
+      const savedNav = localStorage.getItem('task-manager-nav');
+      if (savedNav) {
+        setActiveNavItem(savedNav);
       }
+
+      const savedProjectsOpen = localStorage.getItem(
+        'task-manager-projects-open'
+      );
+      if (savedProjectsOpen) {
+        try {
+          setIsProjectsOpen(JSON.parse(savedProjectsOpen));
+        } catch {
+          // Keep default false
+        }
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
     }
-  }, []);
+  };
 
   // Translation hook
   const { t } = useTranslation(currentLanguage);
@@ -159,15 +145,27 @@ export default function TaskManager() {
 
   // Project menu handlers
 
-  const deleteProject = (projectId: number) => {
+  const deleteProject = (projectId: string) => {
     setProjectToDelete(projectId);
     setShowDeleteModal(true);
   };
 
-  const confirmDelete = () => {
-    if (projectToDelete) {
-      setProjects(projects.filter((p) => p.id !== projectToDelete));
-      setProjectToDelete(null);
+  const confirmDelete = async () => {
+    if (projectToDelete && user) {
+      try {
+        const { error } = await supabase
+          .from('projects')
+          .delete()
+          .eq('id', projectToDelete)
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+
+        setProjects(projects.filter((p) => p.id !== projectToDelete));
+        setProjectToDelete(null);
+      } catch (error) {
+        console.error('Error deleting project:', error);
+      }
     }
     setShowDeleteModal(false);
   };
@@ -177,18 +175,30 @@ export default function TaskManager() {
     setShowDeleteModal(false);
   };
 
-  const createProject = () => {
-    if (newProjectName.trim()) {
-      const newProject = {
-        id: Date.now(),
-        name: newProjectName.trim(),
-        isOpen: false,
-      };
-      setProjects([...projects, newProject]);
-      setNewProjectName('');
-      setShowCreateModal(false);
-      // Automatically open projects section after creating new project
-      setIsProjectsOpen(true);
+  const createProject = async () => {
+    if (newProjectName.trim() && user) {
+      try {
+        const { data, error } = await supabase
+          .from('projects')
+          .insert([
+            {
+              name: newProjectName.trim(),
+              user_id: user.id,
+              is_open: false,
+            },
+          ])
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        setProjects([...projects, data]);
+        setNewProjectName('');
+        setShowCreateModal(false);
+        setIsProjectsOpen(true);
+      } catch (error) {
+        console.error('Error creating project:', error);
+      }
     }
   };
 
@@ -197,94 +207,183 @@ export default function TaskManager() {
     setShowCreateModal(false);
   };
 
-  const handleProjectClick = (project: {
-    id: number;
-    name: string;
-    isOpen: boolean;
-  }) => {
+  const handleProjectClick = async (project: Project) => {
     // Set activeNavItem to project ID (like other nav buttons)
     setActiveNavItem(`project-${project.id}`);
     // Set selected project to show in main content
     setSelectedProject({ id: project.id, name: project.name });
-    // Also toggle the project open state in sidebar
-    setProjects(
-      projects.map((p) =>
-        p.id === project.id ? { ...p, isOpen: !p.isOpen } : p
-      )
-    );
+
+    // Toggle the project open state in sidebar and update in database
+    const updatedIsOpen = !project.is_open;
+
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update({ is_open: updatedIsOpen })
+        .eq('id', project.id)
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+
+      setProjects(
+        projects.map((p) =>
+          p.id === project.id ? { ...p, is_open: updatedIsOpen } : p
+        )
+      );
+    } catch (error) {
+      console.error('Error updating project:', error);
+    }
   };
 
-  const handleAddTask = (
+  const handleAddTask = async (
     taskName: string,
     priority: 'high' | 'medium' | 'low',
     dueDate?: Date | null
   ) => {
-    const newTask = {
-      id: Date.now(),
-      name: taskName,
-      priority: priority,
-      completed: false,
-      createdAt: new Date().toISOString(),
-      dueDate: dueDate ? dueDate.toISOString() : undefined,
-    };
-    setTasks([...tasks, newTask]);
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('tasks')
+        .insert([
+          {
+            name: taskName,
+            priority: priority,
+            completed: false,
+            user_id: user.id,
+            project_id: selectedProject?.id || null,
+            due_date: dueDate ? dueDate.toISOString() : null,
+          },
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setTasks([data, ...tasks]);
+    } catch (error) {
+      console.error('Error adding task:', error);
+    }
   };
 
-  const handleAddProjectTask = (
-    projectId: number,
+  const handleAddProjectTask = async (
+    projectId: string,
     taskName: string,
     priority: 'high' | 'medium' | 'low',
     dueDate?: Date | null
   ) => {
-    const newProjectTask = {
-      id: Date.now(),
-      name: taskName,
-      priority: priority,
-      completed: false,
-      createdAt: new Date().toISOString(),
-      projectId: projectId,
-      dueDate: dueDate ? dueDate.toISOString() : undefined,
-    };
-    setProjectTasks([...projectTasks, newProjectTask]);
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('tasks')
+        .insert([
+          {
+            name: taskName,
+            priority: priority,
+            completed: false,
+            user_id: user.id,
+            project_id: projectId,
+            due_date: dueDate ? dueDate.toISOString() : null,
+          },
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setTasks([data, ...tasks]);
+    } catch (error) {
+      console.error('Error adding project task:', error);
+    }
   };
 
   // Task management functions
-  const handleEditTask = (
-    taskId: number,
+  const handleEditTask = async (
+    taskId: string,
     newName: string,
     newPriority: 'high' | 'medium' | 'low'
   ) => {
-    setTasks(
-      tasks.map((task) =>
-        task.id === taskId
-          ? { ...task, name: newName, priority: newPriority }
-          : task
-      )
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .update({ name: newName, priority: newPriority })
+        .eq('id', taskId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      setTasks(
+        tasks.map((task) =>
+          task.id === taskId
+            ? { ...task, name: newName, priority: newPriority }
+            : task
+        )
+      );
+    } catch (error) {
+      console.error('Error editing task:', error);
+    }
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('id', taskId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      setTasks(tasks.filter((task) => task.id !== taskId));
+    } catch (error) {
+      console.error('Error deleting task:', error);
+    }
+  };
+
+  const handleToggleTask = async (taskId: string, completed: boolean) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .update({ completed: !completed })
+        .eq('id', taskId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      setTasks(
+        tasks.map((task) =>
+          task.id === taskId ? { ...task, completed: !completed } : task
+        )
+      );
+    } catch (error) {
+      console.error('Error toggling task:', error);
+    }
+  };
+
+  // Show loading screen while authenticating
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+          fontSize: '18px',
+          color: '#666',
+        }}
+      >
+        {currentLanguage === 'ka' ? 'იტვირთება...' : 'Loading...'}
+      </div>
     );
-  };
-
-  const handleDeleteTask = (taskId: number) => {
-    setTasks(tasks.filter((task) => task.id !== taskId));
-  };
-
-  // Project task management functions
-  const handleEditProjectTask = (
-    taskId: number,
-    newName: string,
-    newPriority: 'high' | 'medium' | 'low'
-  ) => {
-    setProjectTasks(
-      projectTasks.map((task) =>
-        task.id === taskId
-          ? { ...task, name: newName, priority: newPriority }
-          : task
-      )
-    );
-  };
-
-  const handleDeleteProjectTask = (taskId: number) => {
-    setProjectTasks(projectTasks.filter((task) => task.id !== taskId));
-  };
+  }
 
   return (
     <>
@@ -309,16 +408,18 @@ export default function TaskManager() {
         className={`main-content ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}
       >
         <MainContent
-          tasks={tasks}
-          projectTasks={projectTasks}
+          tasks={tasks.filter((task) =>
+            selectedProject
+              ? task.project_id === selectedProject.id
+              : task.project_id === null
+          )}
           currentLanguage={currentLanguage}
           activeNavItem={activeNavItem}
           selectedProject={selectedProject}
           onAddProjectTask={handleAddProjectTask}
           onEditTask={handleEditTask}
           onDeleteTask={handleDeleteTask}
-          onEditProjectTask={handleEditProjectTask}
-          onDeleteProjectTask={handleDeleteProjectTask}
+          onToggleTask={handleToggleTask}
           t={t}
         />
       </div>

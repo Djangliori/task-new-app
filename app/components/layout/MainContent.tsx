@@ -4,64 +4,38 @@ import { useState } from 'react';
 import { AddTaskModal } from '../forms/AddTaskModal';
 import { TaskDropdown } from '../ui/TaskDropdown';
 import { getPriorityColor } from '../../utils/constants';
-
-interface Task {
-  id: number;
-  name: string;
-  priority: 'high' | 'medium' | 'low';
-  completed: boolean;
-  createdAt: string;
-  dueDate?: string;
-}
-
-interface ProjectTask {
-  id: number;
-  name: string;
-  priority: 'high' | 'medium' | 'low';
-  completed: boolean;
-  createdAt: string;
-  projectId: number;
-  dueDate?: string;
-}
+import type { Task } from '../../lib/supabase';
 
 interface MainContentProps {
   tasks: Task[];
-  projectTasks: ProjectTask[];
   currentLanguage: 'ka' | 'en';
   activeNavItem: string;
-  selectedProject: { id: number; name: string } | null;
+  selectedProject: { id: string; name: string } | null;
   onAddProjectTask: (
-    projectId: number,
+    projectId: string,
     taskName: string,
     priority: 'high' | 'medium' | 'low',
     dueDate?: Date | null
   ) => void;
   onEditTask: (
-    taskId: number,
+    taskId: string,
     newName: string,
     newPriority: 'high' | 'medium' | 'low'
   ) => void;
-  onDeleteTask: (taskId: number) => void;
-  onEditProjectTask: (
-    taskId: number,
-    newName: string,
-    newPriority: 'high' | 'medium' | 'low'
-  ) => void;
-  onDeleteProjectTask: (taskId: number) => void;
+  onDeleteTask: (taskId: string) => void;
+  onToggleTask: (taskId: string, completed: boolean) => void;
   t: (key: string) => string;
 }
 
 export function MainContent({
   tasks,
-  projectTasks,
   currentLanguage,
   activeNavItem,
   selectedProject,
   onAddProjectTask,
   onEditTask,
   onDeleteTask,
-  onEditProjectTask,
-  onDeleteProjectTask,
+  onToggleTask,
   t,
 }: MainContentProps) {
   const [showProjectTaskModal, setShowProjectTaskModal] = useState(false);
@@ -105,6 +79,15 @@ export function MainContent({
                         fontFamily: 'system-ui, -apple-system, sans-serif',
                       }}
                     >
+                      <input
+                        type="checkbox"
+                        checked={task.completed}
+                        onChange={() => onToggleTask(task.id, task.completed)}
+                        style={{
+                          marginRight: '12px',
+                          transform: 'scale(1.2)',
+                        }}
+                      />
                       <div
                         style={{
                           width: '20px',
@@ -164,9 +147,9 @@ export function MainContent({
       case 'todayNav':
         const today = new Date();
         const todayTasks = tasks.filter((task) => {
-          const taskDate = task.dueDate
-            ? new Date(task.dueDate)
-            : new Date(task.createdAt);
+          const taskDate = task.due_date
+            ? new Date(task.due_date)
+            : new Date(task.created_at);
           return taskDate.toDateString() === today.toDateString();
         });
 
@@ -272,8 +255,8 @@ export function MainContent({
       default:
         // Handle project-specific navigation
         if (activeNavItem.startsWith('project-') && selectedProject) {
-          const currentProjectTasks = projectTasks.filter(
-            (task) => task.projectId === selectedProject.id
+          const currentProjectTasks = tasks.filter(
+            (task) => task.project_id === selectedProject.id
           );
 
           return (
@@ -399,6 +382,15 @@ export function MainContent({
                           fontFamily: 'system-ui, -apple-system, sans-serif',
                         }}
                       >
+                        <input
+                          type="checkbox"
+                          checked={task.completed}
+                          onChange={() => onToggleTask(task.id, task.completed)}
+                          style={{
+                            marginRight: '12px',
+                            transform: 'scale(1.2)',
+                          }}
+                        />
                         <div
                           style={{
                             width: '20px',
@@ -425,8 +417,8 @@ export function MainContent({
                           taskId={task.id}
                           taskName={task.name}
                           taskPriority={task.priority}
-                          onDelete={onDeleteProjectTask}
-                          onEdit={onEditProjectTask}
+                          onDelete={onDeleteTask}
+                          onEdit={onEditTask}
                           currentLanguage={currentLanguage}
                         />
                       </div>

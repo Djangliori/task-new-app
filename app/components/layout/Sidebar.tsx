@@ -1,12 +1,7 @@
 'use client';
 
 import { SimpleDropdown } from '../ui/SimpleDropdown';
-
-interface Project {
-  id: number;
-  name: string;
-  isOpen: boolean;
-}
+import type { Project } from '../../lib/supabase';
 
 interface SidebarProps {
   activeNavItem: string;
@@ -20,7 +15,7 @@ interface SidebarProps {
   onToggleProjects: () => void;
   onProjectClick: (project: Project) => void;
   onCreateProject: () => void;
-  onDeleteProject: (projectId: number) => void;
+  onDeleteProject: (projectId: string) => void;
   t: (key: string) => string;
 }
 
@@ -148,7 +143,7 @@ export function Sidebar({
                       onClick={() => onProjectClick(project)}
                     >
                       <span style={{ marginRight: '8px', fontSize: '12px' }}>
-                        {project.isOpen ? '📁' : '📁'}
+                        {project.is_open ? '📁' : '📁'}
                       </span>
                       <span className="project-name">{project.name}</span>
                     </div>

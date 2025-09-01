@@ -8,6 +8,7 @@ import {
   UnifiedInput,
   UnifiedButton,
 } from '../components/ui/UnifiedForm';
+import { supabase } from '../lib/supabase';
 
 export default function RegisterPage() {
   const [firstName, setFirstName] = useState('');
@@ -113,30 +114,41 @@ export default function RegisterPage() {
       return;
     }
 
-    // Check if email already exists
-    const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
-    if (existingUsers.some((user: { email: string }) => user.email === email)) {
-      setError(t('errorEmailExists'));
-      setIsLoading(false);
-      return;
+    try {
+      // Sign up with Supabase Auth
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim().toLowerCase(),
+        password: password,
+      });
+
+      if (error) {
+        if (error.message.includes('User already registered')) {
+          setError(t('errorEmailExists'));
+        } else {
+          setError(error.message);
+        }
+      } else if (data.user) {
+        // Create user profile in our users table
+        const { error: profileError } = await supabase.from('users').insert([
+          {
+            id: data.user.id,
+            email: email.trim().toLowerCase(),
+            first_name: firstName.trim(),
+            last_name: lastName.trim(),
+          },
+        ]);
+
+        if (profileError) {
+          console.error('Profile creation error:', profileError);
+        }
+
+        // Redirect to login page
+        router.push('/login');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      setError('An error occurred during registration');
     }
-
-    // Create new user
-    const newUser = {
-      id: Date.now(),
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
-      email: email.trim().toLowerCase(),
-      password: password,
-      createdAt: new Date().toISOString(),
-    };
-
-    // Add to users array
-    const updatedUsers = [...existingUsers, newUser];
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
-
-    // Redirect to login page
-    router.push('/login');
 
     setIsLoading(false);
   };

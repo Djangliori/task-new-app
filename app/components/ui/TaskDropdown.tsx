@@ -3,12 +3,12 @@ import { useState, useEffect, useRef } from 'react';
 import { getPriorityColor, getPriorityIcon } from '../../utils/constants';
 
 interface TaskDropdownProps {
-  taskId: number;
+  taskId: string;
   taskName: string;
   taskPriority: 'high' | 'medium' | 'low';
-  onDelete: (id: number) => void;
+  onDelete: (id: string) => void;
   onEdit: (
-    id: number,
+    id: string,
     newName: string,
     newPriority: 'high' | 'medium' | 'low'
   ) => void;

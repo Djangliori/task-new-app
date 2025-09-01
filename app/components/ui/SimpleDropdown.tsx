@@ -2,9 +2,9 @@
 import { useState, useEffect, useRef } from 'react';
 
 interface SimpleDropdownProps {
-  projectId: number;
+  projectId: string;
   projectName: string;
-  onDelete: (id: number) => void;
+  onDelete: (id: string) => void;
   currentLanguage: 'ka' | 'en';
 }
 
