@@ -13,12 +13,14 @@ import { logger } from '../lib/logger';
 import { useTranslation } from '../components/hooks/useTranslation';
 
 function ResetPasswordForm() {
+  const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState<'ka' | 'en'>('ka');
+  const [showOldPassword, setShowOldPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -54,6 +56,17 @@ function ResetPasswordForm() {
     setMessage('');
 
     // Basic validation
+    if (!oldPassword.trim()) {
+      setMessage(
+        currentLanguage === 'ka'
+          ? 'ძველი პაროლის შეყვანა აუცილებელია'
+          : 'Old password is required'
+      );
+      setIsSuccess(false);
+      setIsLoading(false);
+      return;
+    }
+
     if (newPassword !== confirmPassword) {
       setMessage(t('errorPasswordsDontMatch'));
       setIsSuccess(false);
@@ -96,7 +109,34 @@ function ResetPasswordForm() {
         return;
       }
 
-      // Update the password
+      // First, verify the old password by attempting to sign in
+      const { data: user } = await supabase.auth.getUser();
+
+      if (!user.user?.email) {
+        setMessage(t('invalidResetLink'));
+        setIsSuccess(false);
+        setIsLoading(false);
+        return;
+      }
+
+      // Create a new Supabase client to test the old password
+      const testSupabase = getSupabaseClient();
+      const { error: verifyError } = await testSupabase.auth.signInWithPassword(
+        {
+          email: user.user.email,
+          password: oldPassword,
+        }
+      );
+
+      if (verifyError) {
+        logger.error('Old password verification failed:', verifyError);
+        setMessage(t('invalidOldPassword'));
+        setIsSuccess(false);
+        setIsLoading(false);
+        return;
+      }
+
+      // If old password is verified, proceed with updating to new password
       const { error } = await supabase.auth.updateUser({
         password: newPassword,
       });
@@ -111,6 +151,7 @@ function ResetPasswordForm() {
         setIsSuccess(true);
 
         // Clear form
+        setOldPassword('');
         setNewPassword('');
         setConfirmPassword('');
 
@@ -167,8 +208,64 @@ function ResetPasswordForm() {
             }}
           >
             {currentLanguage === 'ka'
-              ? 'შეიყვანეთ თქვენი ახალი პაროლი'
-              : 'Enter your new password'}
+              ? 'ჯერ შეიყვანეთ ძველი პაროლი, შემდეგ ახალი'
+              : 'First enter your old password, then new password'}
+          </div>
+
+          <div>
+            <UnifiedInput
+              label={t('oldPassword')}
+              type={showOldPassword ? 'text' : 'password'}
+              value={oldPassword}
+              onChange={(e) => setOldPassword(e.target.value)}
+              placeholder={t('oldPasswordPlaceholder')}
+              required
+              error={
+                oldPassword.length > 0 && oldPassword.length < 4
+                  ? currentLanguage === 'ka'
+                    ? 'მინიმუმ 4 სიმბოლო'
+                    : 'Minimum 4 characters'
+                  : undefined
+              }
+              success={
+                oldPassword.length >= 4
+                  ? currentLanguage === 'ka'
+                    ? 'ძველი პაროლი შეყვანილია'
+                    : 'Old password entered'
+                  : undefined
+              }
+            />
+            <div
+              style={{
+                marginTop: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '14px',
+                color: '#7f8c8d',
+              }}
+            >
+              <label
+                style={{
+                  cursor: 'pointer',
+                  userSelect: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={showOldPassword}
+                  onChange={(e) => setShowOldPassword(e.target.checked)}
+                  style={{
+                    cursor: 'pointer',
+                    transform: 'scale(0.9)',
+                  }}
+                />
+                {t('showPassword')}
+              </label>
+            </div>
           </div>
 
           <div>
@@ -320,6 +417,7 @@ function ResetPasswordForm() {
             variant="primary"
             disabled={
               isLoading ||
+              !oldPassword.trim() ||
               !newPassword.trim() ||
               !confirmPassword.trim() ||
               newPassword !== confirmPassword ||

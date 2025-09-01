@@ -81,6 +81,8 @@ const translations = {
     resetEmailSent: '✅ აღდგენის ბმული გაგზავნილია თქვენს ელ-ფოსტაზე',
     checkYourEmail: 'შეამოწმეთ თქვენი ელ-ფოსტა და გაყევით ბმულს',
     resetLinkSent: 'აღდგენის ბმული გაგზავნილია',
+    oldPassword: 'ძველი პაროლი:',
+    oldPasswordPlaceholder: 'შეიყვანეთ ძველი პაროლი',
     newPassword: 'ახალი პაროლი:',
     newPasswordPlaceholder: 'შეიყვანეთ ახალი პაროლი',
     confirmNewPassword: 'ახალი პაროლის გამეორება:',
@@ -94,6 +96,8 @@ const translations = {
     enterNewPassword: 'შეიყვანეთ თქვენი ახალი პაროლი',
     passwordsMatch: 'პაროლები ემთხვევა',
     goodPassword: 'კარგი პაროლი',
+    invalidOldPassword: '❌ არასწორი ძველი პაროლი',
+    verifyingOldPassword: 'ძველი პაროლის შემოწმება...',
   },
   en: {
     // Sidebar and Navigation
@@ -174,6 +178,8 @@ const translations = {
     resetEmailSent: '✅ Password reset link has been sent to your email',
     checkYourEmail: 'Check your email and follow the link',
     resetLinkSent: 'Reset link sent',
+    oldPassword: 'Old Password:',
+    oldPasswordPlaceholder: 'Enter old password',
     newPassword: 'New Password:',
     newPasswordPlaceholder: 'Enter new password',
     confirmNewPassword: 'Confirm New Password:',
@@ -187,6 +193,8 @@ const translations = {
     enterNewPassword: 'Enter your new password',
     passwordsMatch: 'Passwords match',
     goodPassword: 'Good password',
+    invalidOldPassword: '❌ Invalid old password',
+    verifyingOldPassword: 'Verifying old password...',
   },
 };
 
