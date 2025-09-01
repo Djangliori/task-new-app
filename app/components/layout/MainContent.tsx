@@ -109,6 +109,17 @@ export function MainContent({
                         >
                           {task.name}
                         </div>
+                        {task.user_first_name && task.user_last_name && (
+                          <div
+                            style={{
+                              fontSize: '12px',
+                              color: '#7f8c8d',
+                              fontStyle: 'italic',
+                            }}
+                          >
+                            {task.user_first_name} {task.user_last_name}
+                          </div>
+                        )}
                       </div>
                       <TaskDropdown
                         taskId={task.id}
@@ -412,6 +423,17 @@ export function MainContent({
                           >
                             {task.name}
                           </div>
+                          {task.user_first_name && task.user_last_name && (
+                            <div
+                              style={{
+                                fontSize: '12px',
+                                color: '#7f8c8d',
+                                fontStyle: 'italic',
+                              }}
+                            >
+                              {task.user_first_name} {task.user_last_name}
+                            </div>
+                          )}
                         </div>
                         <TaskDropdown
                           taskId={task.id}

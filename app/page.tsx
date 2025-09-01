@@ -37,14 +37,14 @@ const AddTaskModal = dynamic(
     ssr: false,
   }
 );
-import type { Project, Task } from './lib/supabase';
+import type { Project, Task, User } from './lib/supabase';
 import { getSupabaseClient } from './lib/supabase';
 import { logger } from './lib/logger';
 
 export default function TaskManager() {
   // React State Management
   const router = useRouter();
-  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeNavItem, setActiveNavItem] = useState('homeNav');
   const [currentLanguage, setCurrentLanguage] = useState<'ka' | 'en'>('ka');
@@ -97,7 +97,20 @@ export default function TaskManager() {
           return;
         }
 
-        setUser(session.user);
+        // Get user profile from users table  
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+
+        if (userError || !userData) {
+          logger.error('Error loading user profile:', userError);
+          router.replace('/login');
+          return;
+        }
+
+        setUser(userData);
         await loadUserData(session.user.id);
         setLoading(false);
       } catch (error) {
@@ -307,6 +320,8 @@ export default function TaskManager() {
             priority: priority,
             completed: false,
             user_id: user.id,
+            user_first_name: user.first_name,
+            user_last_name: user.last_name,
             project_id: selectedProject?.id || null,
             due_date: dueDate ? dueDate.toISOString() : null,
           },
@@ -340,6 +355,8 @@ export default function TaskManager() {
             priority: priority,
             completed: false,
             user_id: user.id,
+            user_first_name: user.first_name,
+            user_last_name: user.last_name,
             project_id: projectId,
             due_date: dueDate ? dueDate.toISOString() : null,
           },

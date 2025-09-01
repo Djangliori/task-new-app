@@ -32,6 +32,8 @@ export interface Task {
   completed: boolean;
   project_id: string | null;
   user_id: string;
+  user_first_name?: string;
+  user_last_name?: string;
   due_date: string | null;
   created_at: string;
 }
