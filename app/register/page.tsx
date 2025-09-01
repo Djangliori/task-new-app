@@ -8,7 +8,9 @@ import {
   UnifiedInput,
   UnifiedButton,
 } from '../components/ui/UnifiedForm';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseClient } from '../lib/supabase';
+import { logger } from '../lib/logger';
+import { useTranslation } from '../components/hooks/useTranslation';
 
 export default function RegisterPage() {
   const [firstName, setFirstName] = useState('');
@@ -23,58 +25,8 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
 
-  // Translation function
-  const translations = {
-    ka: {
-      register: 'რეგისტრაცია',
-      createNewAccount: 'ახალი ანგარიშის შექმნა',
-      firstName: 'სახელი:',
-      firstNamePlaceholder: 'სახელი',
-      lastName: 'გვარი:',
-      lastNamePlaceholder: 'გვარი',
-      email: 'ელ-ფოსტა:',
-      emailPlaceholder: 'შეიყვანეთ ელ-ფოსტა',
-      password: 'პაროლი:',
-      passwordPlaceholder: 'შეიყვანეთ პაროლი (მინ. 6 სიმბოლო)',
-      confirmPassword: 'პაროლის გამეორება:',
-      confirmPasswordPlaceholder: 'გაიმეორეთ პაროლი',
-      createButton: 'ანგარიშის შექმნა',
-      registering: 'რეგისტრაცია...',
-      alreadyHaveAccount: 'უკვე გაქვს ანგარიში?',
-      signIn: 'შესვლა',
-      errorAllFieldsRequired: 'ყველა ველის შევსება სავალდებულოა',
-      errorPasswordsDontMatch: 'პაროლები არ ემთხვევა',
-      errorPasswordTooShort: 'პაროლი უნდა იყოს მინიმუმ 6 სიმბოლო',
-      errorEmailExists: 'ეს ელ-ფოსტა უკვე რეგისტრირებულია',
-      showPassword: 'პაროლის ჩვენება',
-    },
-    en: {
-      register: 'Register',
-      createNewAccount: 'Create New Account',
-      firstName: 'First Name:',
-      firstNamePlaceholder: 'First Name',
-      lastName: 'Last Name:',
-      lastNamePlaceholder: 'Last Name',
-      email: 'Email:',
-      emailPlaceholder: 'Enter your email',
-      password: 'Password:',
-      passwordPlaceholder: 'Enter password (min. 6 characters)',
-      confirmPassword: 'Confirm Password:',
-      confirmPasswordPlaceholder: 'Confirm your password',
-      createButton: 'Create Account',
-      registering: 'Creating...',
-      alreadyHaveAccount: 'Already have an account?',
-      signIn: 'Sign In',
-      errorAllFieldsRequired: 'All fields are required',
-      errorPasswordsDontMatch: 'Passwords do not match',
-      errorPasswordTooShort: 'Password must be at least 6 characters',
-      errorEmailExists: 'This email is already registered',
-      showPassword: 'Show Password',
-    },
-  };
-
-  const t = (key: keyof typeof translations.ka) =>
-    translations[currentLanguage][key];
+  // Translation hook
+  const { t } = useTranslation(currentLanguage);
 
   // Load language on mount
   useEffect(() => {
@@ -120,18 +72,10 @@ export default function RegisterPage() {
 
     try {
       // Sign up with Supabase Auth (disable email confirmation for development)
-      if (process.env.NODE_ENV === 'development') {
-        console.log(
-          '🔄 Starting registration for:',
-          email.trim().toLowerCase()
-        );
-      }
+      logger.log('🔄 Starting registration for:', email.trim().toLowerCase());
 
       // Create supabase client only when needed
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      );
+      const supabase = getSupabaseClient();
 
       const { data, error } = await supabase.auth.signUp({
         email: email.trim().toLowerCase(),
@@ -145,13 +89,11 @@ export default function RegisterPage() {
         },
       });
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log('📊 Registration result:', {
-          user: data.user?.id,
-          session: data.session?.access_token ? 'YES' : 'NO',
-          error: error?.message,
-        });
-      }
+      logger.log('📊 Registration result:', {
+        user: data.user?.id,
+        session: data.session?.access_token ? 'YES' : 'NO',
+        error: error?.message,
+      });
 
       if (error) {
         if (error.message.includes('User already registered')) {
@@ -176,22 +118,13 @@ export default function RegisterPage() {
           });
 
           if (response.ok) {
-            if (process.env.NODE_ENV === 'development') {
-              console.log(
-                '✅ Profile created successfully via API for:',
-                email
-              );
-            }
+            logger.log('✅ Profile created successfully via API for:', email);
           } else {
             const error = await response.text();
-            if (process.env.NODE_ENV === 'development') {
-              console.error('❌ Profile API creation failed:', error);
-            }
+            logger.error('❌ Profile API creation failed:', error);
           }
         } catch (apiError) {
-          if (process.env.NODE_ENV === 'development') {
-            console.error('❌ Profile API error:', apiError);
-          }
+          logger.error('❌ Profile API error:', apiError);
 
           // Fallback to direct insertion
           const { error: profileError } = await supabase.from('users').insert([
@@ -203,10 +136,10 @@ export default function RegisterPage() {
             },
           ]);
 
-          if (profileError && process.env.NODE_ENV === 'development') {
-            console.error('❌ Direct profile creation FAILED:', profileError);
-          } else if (!profileError && process.env.NODE_ENV === 'development') {
-            console.log('✅ Direct profile created successfully for:', email);
+          if (profileError) {
+            logger.error('❌ Direct profile creation FAILED:', profileError);
+          } else {
+            logger.log('✅ Direct profile created successfully for:', email);
           }
         }
 
@@ -219,9 +152,7 @@ export default function RegisterPage() {
         router.push('/login');
       }
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Registration error:', error);
-      }
+      logger.error('Registration error:', error);
       setError('An error occurred during registration');
     }
 

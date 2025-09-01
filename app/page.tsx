@@ -8,21 +8,14 @@ import { ProjectModal } from './components/forms/ProjectModal';
 import { ConfirmationModal } from './components/forms/ConfirmationModal';
 import { useTranslation } from './components/hooks/useTranslation';
 import { AddTaskModal } from './components/forms/AddTaskModal';
-import { createClient } from '@supabase/supabase-js';
 import type { Project, Task } from './lib/supabase';
-
-// Helper function to create Supabase client
-const getSupabaseClient = () => {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-};
+import { getSupabaseClient } from './lib/supabase';
+import { logger } from './lib/logger';
 
 export default function TaskManager() {
   // React State Management
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeNavItem, setActiveNavItem] = useState('homeNav');
   const [currentLanguage, setCurrentLanguage] = useState<'ka' | 'en'>('ka');
@@ -77,7 +70,7 @@ export default function TaskManager() {
         setUser(session.user);
         await loadUserData(session.user.id);
       } catch (error) {
-        console.error('Auth error:', error);
+        logger.error('Auth error:', error);
         router.push('/login');
       } finally {
         setLoading(false);
@@ -129,7 +122,7 @@ export default function TaskManager() {
         }
       }
     } catch (error) {
-      console.error('Error loading user data:', error);
+      logger.error('Error loading user data:', error);
     }
   };
 
@@ -176,7 +169,7 @@ export default function TaskManager() {
         setProjects(projects.filter((p) => p.id !== projectToDelete));
         setProjectToDelete(null);
       } catch (error) {
-        console.error('Error deleting project:', error);
+        logger.error('Error deleting project:', error);
       }
     }
     setShowDeleteModal(false);
@@ -210,7 +203,7 @@ export default function TaskManager() {
         setShowCreateModal(false);
         setIsProjectsOpen(true);
       } catch (error) {
-        console.error('Error creating project:', error);
+        logger.error('Error creating project:', error);
       }
     }
   };
@@ -245,7 +238,7 @@ export default function TaskManager() {
         )
       );
     } catch (error) {
-      console.error('Error updating project:', error);
+      logger.error('Error updating project:', error);
     }
   };
 
@@ -277,7 +270,7 @@ export default function TaskManager() {
 
       setTasks([data, ...tasks]);
     } catch (error) {
-      console.error('Error adding task:', error);
+      logger.error('Error adding task:', error);
     }
   };
 
@@ -310,7 +303,7 @@ export default function TaskManager() {
 
       setTasks([data, ...tasks]);
     } catch (error) {
-      console.error('Error adding project task:', error);
+      logger.error('Error adding project task:', error);
     }
   };
 
@@ -340,7 +333,7 @@ export default function TaskManager() {
         )
       );
     } catch (error) {
-      console.error('Error editing task:', error);
+      logger.error('Error editing task:', error);
     }
   };
 
@@ -359,7 +352,7 @@ export default function TaskManager() {
 
       setTasks(tasks.filter((task) => task.id !== taskId));
     } catch (error) {
-      console.error('Error deleting task:', error);
+      logger.error('Error deleting task:', error);
     }
   };
 
@@ -382,7 +375,7 @@ export default function TaskManager() {
         )
       );
     } catch (error) {
-      console.error('Error toggling task:', error);
+      logger.error('Error toggling task:', error);
     }
   };
 

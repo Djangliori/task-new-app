@@ -2,7 +2,8 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseClient } from '../../lib/supabase';
+import { logger } from '../../lib/logger';
 
 function ConfirmContent() {
   const router = useRouter();
@@ -18,10 +19,7 @@ function ConfirmContent() {
 
         if (token_hash && type) {
           // Create supabase client only on client-side
-          const supabase = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-          );
+          const supabase = getSupabaseClient();
 
           const { error } = await supabase.auth.verifyOtp({
             token_hash,
@@ -29,15 +27,11 @@ function ConfirmContent() {
           });
 
           if (error) {
-            if (process.env.NODE_ENV === 'development') {
-              console.error('❌ Confirmation error:', error);
-            }
+            logger.error('❌ Confirmation error:', error);
             setMessage('დადასტურების შეცდომა. გთხოვთ ისევ სცადოთ.');
             setIsSuccess(false);
           } else {
-            if (process.env.NODE_ENV === 'development') {
-              console.log('✅ Email confirmed successfully');
-            }
+            logger.log('✅ Email confirmed successfully');
             setMessage(
               '✅ ელ-ფოსტა წარმატებით დადასტურდა! ახლა შეგიძლიათ შემოხვიდეთ.'
             );
@@ -53,9 +47,7 @@ function ConfirmContent() {
           setIsSuccess(false);
         }
       } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('❌ Confirmation catch error:', error);
-        }
+        logger.error('❌ Confirmation catch error:', error);
         setMessage('❌ დადასტურების შეცდომა მოხდა.');
         setIsSuccess(false);
       }

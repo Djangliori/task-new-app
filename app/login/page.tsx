@@ -8,7 +8,9 @@ import {
   UnifiedInput,
   UnifiedButton,
 } from '../components/ui/UnifiedForm';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseClient } from '../lib/supabase';
+import { logger } from '../lib/logger';
+import { useTranslation } from '../components/hooks/useTranslation';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -19,38 +21,8 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
-  // Translation function
-  const translations = {
-    ka: {
-      login: 'შესვლა',
-      taskManagerLogin: 'Task Manager-ში შესასვლელად',
-      email: 'ელ-ფოსტა:',
-      emailPlaceholder: 'შეიყვანეთ ელ-ფოსტა',
-      password: 'პაროლი:',
-      passwordPlaceholder: 'შეიყვანეთ პაროლი',
-      loginButton: 'შესვლა',
-      checking: 'შემოწმება...',
-      createAccount: 'Create New Account',
-      errorWrongCredentials: 'შეცდომა: არასწორი ელ-ფოსტა ან პაროლი',
-      showPassword: 'პაროლის ჩვენება',
-    },
-    en: {
-      login: 'Login',
-      taskManagerLogin: 'Sign in to Task Manager',
-      email: 'Email:',
-      emailPlaceholder: 'Enter your email',
-      password: 'Password:',
-      passwordPlaceholder: 'Enter your password',
-      loginButton: 'Sign In',
-      checking: 'Checking...',
-      createAccount: 'Create New Account',
-      errorWrongCredentials: 'Error: Invalid email or password',
-      showPassword: 'Show Password',
-    },
-  };
-
-  const t = (key: keyof typeof translations.ka) =>
-    translations[currentLanguage][key];
+  // Translation hook
+  const { t } = useTranslation(currentLanguage);
 
   // Load language and check if user is already logged in
   useEffect(() => {
@@ -60,10 +32,7 @@ export default function LoginPage() {
 
     // Check if user is already logged in with Supabase
     const checkAuth = async () => {
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      );
+      const supabase = getSupabaseClient();
 
       const {
         data: { session },
@@ -89,19 +58,14 @@ export default function LoginPage() {
 
     try {
       const loginEmail = username.trim().toLowerCase();
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🔐 Attempting login with:', {
-          email: loginEmail,
-          passwordLength: password.length,
-          timestamp: new Date().toISOString(),
-        });
-      }
+      logger.log('🔐 Attempting login with:', {
+        email: loginEmail,
+        passwordLength: password.length,
+        timestamp: new Date().toISOString(),
+      });
 
       // Create supabase client only when needed
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      );
+      const supabase = getSupabaseClient();
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email: username.trim().toLowerCase(),
@@ -109,13 +73,11 @@ export default function LoginPage() {
       });
 
       if (error) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('❌ Supabase Auth Error:', {
-            message: error.message,
-            status: error.status,
-            details: error,
-          });
-        }
+        logger.error('❌ Supabase Auth Error:', {
+          message: error.message,
+          status: error.status,
+          details: error,
+        });
 
         if (error.message.includes('Email not confirmed')) {
           setError(
@@ -133,15 +95,11 @@ export default function LoginPage() {
           setError(t('errorWrongCredentials'));
         }
       } else if (data.user) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('✅ Login successful for:', data.user.email);
-        }
+        logger.log('✅ Login successful for:', data.user.email);
         router.push('/');
       }
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('❌ Login catch error:', error);
-      }
+      logger.error('❌ Login catch error:', error);
       setError(t('errorWrongCredentials'));
     }
 

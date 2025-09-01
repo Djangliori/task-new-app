@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '../../lib/logger';
 
 function getSupabaseAdmin() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -40,9 +41,7 @@ export async function POST(request: NextRequest) {
     ]);
 
     if (profileError) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Service role profile creation error:', profileError);
-      }
+      logger.error('Service role profile creation error:', profileError);
       return NextResponse.json(
         { error: profileError.message },
         { status: 500 }
@@ -54,9 +53,7 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('API error:', error);
-    }
+    logger.error('API error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
