@@ -9,6 +9,7 @@ import {
   UnifiedButton,
 } from '../components/ui/UnifiedForm';
 import { supabase } from '../lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 
 export default function RegisterPage() {
   const [firstName, setFirstName] = useState('');
@@ -19,6 +20,8 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState<'ka' | 'en'>('ka');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
 
   // Translation function
@@ -44,6 +47,7 @@ export default function RegisterPage() {
       errorPasswordsDontMatch: 'პაროლები არ ემთხვევა',
       errorPasswordTooShort: 'პაროლი უნდა იყოს მინიმუმ 6 სიმბოლო',
       errorEmailExists: 'ეს ელ-ფოსტა უკვე რეგისტრირებულია',
+      showPassword: 'პაროლის ჩვენება',
     },
     en: {
       register: 'Register',
@@ -66,6 +70,7 @@ export default function RegisterPage() {
       errorPasswordsDontMatch: 'Passwords do not match',
       errorPasswordTooShort: 'Password must be at least 6 characters',
       errorEmailExists: 'This email is already registered',
+      showPassword: 'Show Password',
     },
   };
 
@@ -115,10 +120,25 @@ export default function RegisterPage() {
     }
 
     try {
-      // Sign up with Supabase Auth
+      // Sign up with Supabase Auth (disable email confirmation for development)
+      console.log('🔄 Starting registration for:', email.trim().toLowerCase());
+      
       const { data, error } = await supabase.auth.signUp({
         email: email.trim().toLowerCase(),
         password: password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/confirm`,
+          data: {
+            first_name: firstName.trim(),
+            last_name: lastName.trim(),
+          }
+        },
+      });
+      
+      console.log('📊 Registration result:', {
+        user: data.user?.id,
+        session: data.session?.access_token ? 'YES' : 'NO',
+        error: error?.message,
       });
 
       if (error) {
@@ -128,21 +148,55 @@ export default function RegisterPage() {
           setError(error.message);
         }
       } else if (data.user) {
-        // Create user profile in our users table
-        const { error: profileError } = await supabase.from('users').insert([
-          {
-            id: data.user.id,
-            email: email.trim().toLowerCase(),
-            first_name: firstName.trim(),
-            last_name: lastName.trim(),
-          },
-        ]);
-
-        if (profileError) {
-          console.error('Profile creation error:', profileError);
+        // Wait for the user to be properly authenticated first
+        const { data: session } = await supabase.auth.getSession();
+        
+        // Create profile using service role to bypass RLS during registration
+        try {
+          const response = await fetch('/api/create-profile', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              userId: data.user.id,
+              email: email.trim().toLowerCase(),
+              firstName: firstName.trim(),
+              lastName: lastName.trim(),
+            }),
+          });
+          
+          if (response.ok) {
+            console.log('✅ Profile created successfully via API for:', email);
+          } else {
+            const error = await response.text();
+            console.error('❌ Profile API creation failed:', error);
+          }
+        } catch (apiError) {
+          console.error('❌ Profile API error:', apiError);
+          
+          // Fallback to direct insertion
+          const { error: profileError } = await supabase.from('users').insert([
+            {
+              id: data.user.id,
+              email: email.trim().toLowerCase(),
+              first_name: firstName.trim(),
+              last_name: lastName.trim(),
+            },
+          ]);
+          
+          if (profileError) {
+            console.error('❌ Direct profile creation FAILED:', profileError);
+          } else {
+            console.log('✅ Direct profile created successfully for:', email);
+          }
         }
 
-        // Redirect to login page
+        // Show success message instead of immediate redirect
+        alert(currentLanguage === 'ka' 
+          ? '✅ რეგისტრაცია წარმატებით დასრულდა! გთხოვთ შეამოწმოთ თქვენი ელ-ფოსტა დასადასტურებლად.'
+          : '✅ Registration successful! Please check your email for confirmation.'
+        );
         router.push('/login');
       }
     } catch (error) {
@@ -194,53 +248,51 @@ export default function RegisterPage() {
             {t('createNewAccount')}
           </div>
 
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <UnifiedInput
-              label={t('firstName')}
-              type="text"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              placeholder={t('firstNamePlaceholder')}
-              required
-              error={
-                firstName.length > 0 && firstName.trim().length < 2
-                  ? currentLanguage === 'ka'
-                    ? 'მინიმუმ 2 სიმბოლო'
-                    : 'Minimum 2 characters'
-                  : undefined
-              }
-              success={
-                firstName.trim().length >= 2
-                  ? currentLanguage === 'ka'
-                    ? 'კარგი სახელი'
-                    : 'Good name'
-                  : undefined
-              }
-            />
+          <UnifiedInput
+            label={t('firstName')}
+            type="text"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            placeholder={t('firstNamePlaceholder')}
+            required
+            error={
+              firstName.length > 0 && firstName.trim().length < 2
+                ? currentLanguage === 'ka'
+                  ? 'მინიმუმ 2 სიმბოლო'
+                  : 'Minimum 2 characters'
+                : undefined
+            }
+            success={
+              firstName.trim().length >= 2
+                ? currentLanguage === 'ka'
+                  ? 'კარგი სახელი'
+                  : 'Good name'
+                : undefined
+            }
+          />
 
-            <UnifiedInput
-              label={t('lastName')}
-              type="text"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              placeholder={t('lastNamePlaceholder')}
-              required
-              error={
-                lastName.length > 0 && lastName.trim().length < 2
-                  ? currentLanguage === 'ka'
-                    ? 'მინიმუმ 2 სიმბოლო'
-                    : 'Minimum 2 characters'
-                  : undefined
-              }
-              success={
-                lastName.trim().length >= 2
-                  ? currentLanguage === 'ka'
-                    ? 'კარგი გვარი'
-                    : 'Good surname'
-                  : undefined
-              }
-            />
-          </div>
+          <UnifiedInput
+            label={t('lastName')}
+            type="text"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            placeholder={t('lastNamePlaceholder')}
+            required
+            error={
+              lastName.length > 0 && lastName.trim().length < 2
+                ? currentLanguage === 'ka'
+                  ? 'მინიმუმ 2 სიმბოლო'
+                  : 'Minimum 2 characters'
+                : undefined
+            }
+            success={
+              lastName.trim().length >= 2
+                ? currentLanguage === 'ka'
+                  ? 'კარგი გვარი'
+                  : 'Good surname'
+                : undefined
+            }
+          />
 
           <UnifiedInput
             label={t('email')}
@@ -265,53 +317,119 @@ export default function RegisterPage() {
             }
           />
 
-          <UnifiedInput
-            label={t('password')}
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder={t('passwordPlaceholder')}
-            required
-            error={
-              password.length > 0 && password.length < 6
-                ? currentLanguage === 'ka'
-                  ? 'მინიმუმ 6 სიმბოლო'
-                  : 'Minimum 6 characters'
-                : undefined
-            }
-            success={
-              password.length >= 6
-                ? currentLanguage === 'ka'
-                  ? 'კარგი პაროლი'
-                  : 'Strong password'
-                : undefined
-            }
-          />
+          <div>
+            <UnifiedInput
+              label={t('password')}
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder={t('passwordPlaceholder')}
+              required
+              error={
+                password.length > 0 && password.length < 6
+                  ? currentLanguage === 'ka'
+                    ? 'მინიმუმ 6 სიმბოლო'
+                    : 'Minimum 6 characters'
+                  : undefined
+              }
+              success={
+                password.length >= 6
+                  ? currentLanguage === 'ka'
+                    ? 'კარგი პაროლი'
+                    : 'Strong password'
+                  : undefined
+              }
+            />
+            <div
+              style={{
+                marginTop: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '14px',
+                color: '#7f8c8d',
+              }}
+            >
+              <label
+                style={{
+                  cursor: 'pointer',
+                  userSelect: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={showPassword}
+                  onChange={(e) => setShowPassword(e.target.checked)}
+                  style={{
+                    cursor: 'pointer',
+                    transform: 'scale(0.9)',
+                  }}
+                />
+                {t('showPassword')}
+              </label>
+            </div>
+          </div>
 
-          <UnifiedInput
-            label={t('confirmPassword')}
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder={t('confirmPasswordPlaceholder')}
-            required
-            error={
-              confirmPassword.length > 0 && password !== confirmPassword
-                ? currentLanguage === 'ka'
-                  ? 'პაროლები არ ემთხვევა'
-                  : 'Passwords do not match'
-                : undefined
-            }
-            success={
-              confirmPassword.length > 0 &&
-              password === confirmPassword &&
-              password.length >= 6
-                ? currentLanguage === 'ka'
-                  ? 'პაროლები ემთხვევა'
-                  : 'Passwords match'
-                : undefined
-            }
-          />
+          <div>
+            <UnifiedInput
+              label={t('confirmPassword')}
+              type={showConfirmPassword ? "text" : "password"}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder={t('confirmPasswordPlaceholder')}
+              required
+              error={
+                confirmPassword.length > 0 && password !== confirmPassword
+                  ? currentLanguage === 'ka'
+                    ? 'პაროლები არ ემთხვევა'
+                    : 'Passwords do not match'
+                  : undefined
+              }
+              success={
+                confirmPassword.length > 0 &&
+                password === confirmPassword &&
+                password.length >= 6
+                  ? currentLanguage === 'ka'
+                    ? 'პაროლები ემთხვევა'
+                    : 'Passwords match'
+                  : undefined
+              }
+            />
+            <div
+              style={{
+                marginTop: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '14px',
+                color: '#7f8c8d',
+              }}
+            >
+              <label
+                style={{
+                  cursor: 'pointer',
+                  userSelect: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={showConfirmPassword}
+                  onChange={(e) => setShowConfirmPassword(e.target.checked)}
+                  style={{
+                    cursor: 'pointer',
+                    transform: 'scale(0.9)',
+                  }}
+                />
+                {t('showPassword')}
+              </label>
+            </div>
+          </div>
 
           {error && (
             <div

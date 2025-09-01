@@ -16,6 +16,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState<'ka' | 'en'>('ka');
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   // Translation function
@@ -31,6 +32,7 @@ export default function LoginPage() {
       checking: 'შემოწმება...',
       createAccount: 'Create New Account',
       errorWrongCredentials: 'შეცდომა: არასწორი ელ-ფოსტა ან პაროლი',
+      showPassword: 'პაროლის ჩვენება',
     },
     en: {
       login: 'Login',
@@ -43,6 +45,7 @@ export default function LoginPage() {
       checking: 'Checking...',
       createAccount: 'Create New Account',
       errorWrongCredentials: 'Error: Invalid email or password',
+      showPassword: 'Show Password',
     },
   };
 
@@ -80,19 +83,44 @@ export default function LoginPage() {
     setError('');
 
     try {
+      const loginEmail = username.trim().toLowerCase();
+      console.log('🔐 Attempting login with:', {
+        email: loginEmail,
+        passwordLength: password.length,
+        timestamp: new Date().toISOString()
+      });
+      
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: username,
+        email: username.trim().toLowerCase(),
         password: password,
       });
 
       if (error) {
-        setError(t('errorWrongCredentials'));
+        console.error('❌ Supabase Auth Error:', {
+          message: error.message,
+          status: error.status,
+          details: error
+        });
+        
+        if (error.message.includes('Email not confirmed')) {
+          setError(currentLanguage === 'ka' 
+            ? 'ელ-ფოსტა არ არის დადასტურებული' 
+            : 'Email not confirmed'
+          );
+        } else if (error.message.includes('Invalid login credentials')) {
+          setError(currentLanguage === 'ka' 
+            ? 'არასწორი ელ-ფოსტა ან პაროლი' 
+            : 'Invalid email or password'
+          );
+        } else {
+          setError(t('errorWrongCredentials'));
+        }
       } else if (data.user) {
-        // Successfully logged in
+        console.log('✅ Login successful for:', data.user.email);
         router.push('/');
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('❌ Login catch error:', error);
       setError(t('errorWrongCredentials'));
     }
 
@@ -163,28 +191,61 @@ export default function LoginPage() {
             }
           />
 
-          <UnifiedInput
-            label={t('password')}
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder={t('passwordPlaceholder')}
-            required
-            error={
-              password.length > 0 && password.length < 4
-                ? currentLanguage === 'ka'
-                  ? 'მინიმუმ 4 სიმბოლო'
-                  : 'Minimum 4 characters'
-                : undefined
-            }
-            success={
-              password.length >= 4
-                ? currentLanguage === 'ka'
-                  ? 'კარგი პაროლი'
-                  : 'Good password'
-                : undefined
-            }
-          />
+          <div>
+            <UnifiedInput
+              label={t('password')}
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder={t('passwordPlaceholder')}
+              required
+              error={
+                password.length > 0 && password.length < 4
+                  ? currentLanguage === 'ka'
+                    ? 'მინიმუმ 4 სიმბოლო'
+                    : 'Minimum 4 characters'
+                  : undefined
+              }
+              success={
+                password.length >= 4
+                  ? currentLanguage === 'ka'
+                    ? 'კარგი პაროლი'
+                    : 'Good password'
+                  : undefined
+              }
+            />
+            <div
+              style={{
+                marginTop: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '14px',
+                color: '#7f8c8d',
+              }}
+            >
+              <label
+                style={{
+                  cursor: 'pointer',
+                  userSelect: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={showPassword}
+                  onChange={(e) => setShowPassword(e.target.checked)}
+                  style={{
+                    cursor: 'pointer',
+                    transform: 'scale(0.9)',
+                  }}
+                />
+                {t('showPassword')}
+              </label>
+            </div>
+          </div>
 
           {error && (
             <div
