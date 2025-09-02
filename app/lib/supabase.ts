@@ -13,8 +13,9 @@ export const getSupabaseClient = (): SupabaseClient => {
         auth: {
           persistSession: true,
           storageKey: 'task-manager-auth',
-          storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-        }
+          storage:
+            typeof window !== 'undefined' ? window.localStorage : undefined,
+        },
       }
     );
   }

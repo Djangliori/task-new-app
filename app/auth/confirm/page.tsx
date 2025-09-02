@@ -4,13 +4,11 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getSupabaseClient } from '../../lib/supabase';
 import { logger } from '../../lib/logger';
-import { useTranslation } from '../../components/hooks/useTranslation';
 
 function ConfirmContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [currentLanguage, setCurrentLanguage] = useState<'ka' | 'en'>('ka');
-  const { t } = useTranslation(currentLanguage);
   const [message, setMessage] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
   const [isReady, setIsReady] = useState(false);

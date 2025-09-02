@@ -69,7 +69,7 @@ export default function LoginPage() {
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email: loginEmail,
-        password: password
+        password: password,
       });
 
       if (error) {
@@ -93,7 +93,7 @@ export default function LoginPage() {
       } else if (data.user) {
         // Save remember me preference for next time
         localStorage.setItem('rememberMe', rememberMe.toString());
-        
+
         // If remember me is unchecked, clear session on next page load
         if (!rememberMe) {
           // Set a flag to clear session when browser/tab closes
@@ -102,13 +102,13 @@ export default function LoginPage() {
           // Remove the flag if remember me is checked
           sessionStorage.removeItem('clearSessionOnClose');
         }
-        
+
         logger.log('✅ Login successful:', {
           email: data.user.email,
           rememberMe: rememberMe,
-          sessionPersisted: rememberMe
+          sessionPersisted: rememberMe,
         });
-        
+
         router.push('/');
       }
     } catch (error) {

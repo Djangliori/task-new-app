@@ -87,8 +87,10 @@ export default function TaskManager() {
     const checkUser = async () => {
       try {
         // Check if session should be cleared (remember me was unchecked)
-        const shouldClearSession = sessionStorage.getItem('clearSessionOnClose');
-        
+        const shouldClearSession = sessionStorage.getItem(
+          'clearSessionOnClose'
+        );
+
         const supabase = getSupabaseClient();
         const {
           data: { session },
