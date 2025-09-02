@@ -38,6 +38,14 @@ export default function LoginPage() {
     // Check if user is already logged in with Supabase
     const checkAuth = async () => {
       try {
+        // Check if we're forcing manual login (from confirmation page)
+        const forceManualLogin = sessionStorage.getItem('forceManualLogin');
+        if (forceManualLogin) {
+          sessionStorage.removeItem('forceManualLogin');
+          logger.log('🔄 Force manual login requested, staying on login page');
+          return; // Don't check session, stay on login page
+        }
+
         const supabase = getSupabaseClient();
 
         const {

@@ -260,7 +260,19 @@ function ConfirmContent() {
           </button>
         ) : (
           <button
-            onClick={() => router.push('/login')}
+            onClick={async () => {
+              // Clear session before going to login to force manual credential entry
+              const supabase = getSupabaseClient();
+              await supabase.auth.signOut();
+              
+              // Add flag to indicate we want manual login (not auto-redirect)
+              sessionStorage.setItem('forceManualLogin', 'true');
+              
+              // Small delay to ensure signOut completes
+              setTimeout(() => {
+                router.push('/login');
+              }, 100);
+            }}
             style={{
               background: isSuccess ? '#4da8da' : '#95a5a6',
               color: 'white',
