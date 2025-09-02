@@ -13,14 +13,12 @@ import { logger } from '../lib/logger';
 import { useTranslation } from '../components/hooks/useTranslation';
 
 function ResetPasswordForm() {
-  const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState<'ka' | 'en'>('ka');
-  const [showOldPassword, setShowOldPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [hasValidTokens, setHasValidTokens] = useState(false);
@@ -72,17 +70,6 @@ function ResetPasswordForm() {
     setMessage('');
 
     // Basic validation
-    if (!oldPassword.trim()) {
-      setMessage(
-        currentLanguage === 'ka'
-          ? 'შეიყვანეთ მიმდინარე პაროლი'
-          : 'Please enter your current password'
-      );
-      setIsSuccess(false);
-      setIsLoading(false);
-      return;
-    }
-
     if (newPassword !== confirmPassword) {
       setMessage(t('errorPasswordsDontMatch'));
       setIsSuccess(false);
@@ -92,17 +79,6 @@ function ResetPasswordForm() {
 
     if (newPassword.length < 6) {
       setMessage(t('errorPasswordTooShort'));
-      setIsSuccess(false);
-      setIsLoading(false);
-      return;
-    }
-
-    if (oldPassword === newPassword) {
-      setMessage(
-        currentLanguage === 'ka'
-          ? 'ახალი პაროლი უნდა განსხვავდებოდეს ძველისგან'
-          : 'New password must be different from current password'
-      );
       setIsSuccess(false);
       setIsLoading(false);
       return;
@@ -161,28 +137,7 @@ function ResetPasswordForm() {
         return;
       }
 
-      logger.log('🔄 Verifying old password for user:', user.user.email);
-
-      // First, verify the old password by attempting to sign in with it
-      const { error: oldPasswordError } =
-        await supabase.auth.signInWithPassword({
-          email: user.user.email,
-          password: oldPassword,
-        });
-
-      if (oldPasswordError) {
-        logger.error('Old password verification failed:', oldPasswordError);
-        setMessage(
-          currentLanguage === 'ka'
-            ? 'მიმდინარე პაროლი არასწორია'
-            : 'Current password is incorrect'
-        );
-        setIsSuccess(false);
-        setIsLoading(false);
-        return;
-      }
-
-      logger.log('✅ Old password verified. Updating to new password...');
+      logger.log('✅ Session established. Updating to new password...');
 
       // Now update to the new password
       const { error } = await supabase.auth.updateUser({
@@ -199,7 +154,6 @@ function ResetPasswordForm() {
         setIsSuccess(true);
 
         // Clear form
-        setOldPassword('');
         setNewPassword('');
         setConfirmPassword('');
 
@@ -282,71 +236,6 @@ function ResetPasswordForm() {
 
           <div>
             <UnifiedInput
-              label={
-                currentLanguage === 'ka'
-                  ? 'მიმდინარე პაროლი'
-                  : 'Current Password'
-              }
-              type={showOldPassword ? 'text' : 'password'}
-              value={oldPassword}
-              onChange={(e) => setOldPassword(e.target.value)}
-              placeholder={
-                currentLanguage === 'ka'
-                  ? 'შეიყვანეთ მიმდინარე პაროლი'
-                  : 'Enter current password'
-              }
-              required
-              error={
-                oldPassword.length > 0 && oldPassword.length < 4
-                  ? currentLanguage === 'ka'
-                    ? 'მინიმუმ 4 სიმბოლო'
-                    : 'Minimum 4 characters'
-                  : undefined
-              }
-              success={
-                oldPassword.length >= 4
-                  ? currentLanguage === 'ka'
-                    ? 'კარგი პაროლი'
-                    : 'Good password'
-                  : undefined
-              }
-            />
-            <div
-              style={{
-                marginTop: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                fontSize: '14px',
-                color: '#7f8c8d',
-              }}
-            >
-              <label
-                style={{
-                  cursor: 'pointer',
-                  userSelect: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={showOldPassword}
-                  onChange={(e) => setShowOldPassword(e.target.checked)}
-                  tabIndex={-1}
-                  style={{
-                    cursor: 'pointer',
-                    transform: 'scale(0.9)',
-                  }}
-                />
-                {t('showPassword')}
-              </label>
-            </div>
-          </div>
-
-          <div>
-            <UnifiedInput
               label={t('newPassword')}
               type={showPassword ? 'text' : 'password'}
               value={newPassword}
@@ -356,14 +245,10 @@ function ResetPasswordForm() {
               error={
                 newPassword.length > 0 && newPassword.length < 6
                   ? t('errorPasswordTooShort')
-                  : oldPassword.length > 0 && newPassword === oldPassword
-                    ? currentLanguage === 'ka'
-                      ? 'ახალი პაროლი უნდა განსხვავდებოდეს მიმდინარისგან'
-                      : 'New password must be different from current'
-                    : undefined
+                  : undefined
               }
               success={
-                newPassword.length >= 6 && newPassword !== oldPassword
+                newPassword.length >= 6
                   ? currentLanguage === 'ka'
                     ? 'კარგი ახალი პაროლი'
                     : 'Good new password'
@@ -500,12 +385,10 @@ function ResetPasswordForm() {
             variant="primary"
             disabled={
               isLoading ||
-              !oldPassword.trim() ||
               !newPassword.trim() ||
               !confirmPassword.trim() ||
               newPassword !== confirmPassword ||
               newPassword.length < 6 ||
-              oldPassword === newPassword ||
               isSuccess
             }
             isLoading={isLoading}
