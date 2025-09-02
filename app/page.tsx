@@ -94,19 +94,24 @@ export default function TaskManager() {
         const supabase = getSupabaseClient();
         const {
           data: { session },
+          error,
         } = await supabase.auth.getSession();
 
         // Clear session if remember me was unchecked and this is a new browser session
         if (shouldClearSession && session) {
+          logger.log('🔄 Clearing session due to remember me preference');
           await supabase.auth.signOut();
           sessionStorage.removeItem('clearSessionOnClose');
           router.replace('/login');
           return;
         }
 
-        if (!session) {
-          // Immediate redirect to login - no loading screen
-          router.replace('/login');
+        if (!session || error) {
+          logger.log('❌ No valid session found, redirecting to login');
+          // Add a small delay to prevent rapid redirects that could cause loops
+          setTimeout(() => {
+            router.replace('/login');
+          }, 100);
           return;
         }
 
@@ -119,13 +124,19 @@ export default function TaskManager() {
           created_at: session.user.created_at,
         };
 
-        logger.log('✅ Using auth metadata for user:', userData);
+        logger.log(
+          '✅ Valid session found, loading user data:',
+          userData.email
+        );
         setUser(userData);
         await loadUserData(session.user.id);
         setLoading(false);
       } catch (error) {
-        logger.error('Auth error:', error);
-        router.replace('/login');
+        logger.error('❌ Auth error in main page:', error);
+        // Delay redirect to prevent loops
+        setTimeout(() => {
+          router.replace('/login');
+        }, 200);
       }
     };
 

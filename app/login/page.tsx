@@ -37,13 +37,22 @@ export default function LoginPage() {
 
     // Check if user is already logged in with Supabase
     const checkAuth = async () => {
-      const supabase = getSupabaseClient();
+      try {
+        const supabase = getSupabaseClient();
 
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (session) {
-        router.push('/');
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
+
+        // Only redirect if we have a valid session and no errors
+        if (session && !error) {
+          logger.log('✅ User already logged in, redirecting to main page');
+          router.replace('/');
+        }
+      } catch (error) {
+        logger.error('❌ Auth check error in login page:', error);
+        // Stay on login page if auth check fails
       }
     };
 
@@ -90,6 +99,7 @@ export default function LoginPage() {
         } else {
           setError(t('errorWrongCredentials'));
         }
+        setIsLoading(false);
       } else if (data.user) {
         // Save remember me preference for next time
         localStorage.setItem('rememberMe', rememberMe.toString());
@@ -109,14 +119,17 @@ export default function LoginPage() {
           sessionPersisted: rememberMe,
         });
 
-        router.push('/');
+        // Wait a bit to ensure session is fully established
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        // Use replace instead of push to prevent back navigation issues
+        router.replace('/');
       }
     } catch (error) {
       logger.error('❌ Login catch error:', error);
       setError(t('errorWrongCredentials'));
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
   return (
