@@ -80,14 +80,28 @@ export default function LoginPage() {
     try {
       const loginEmail = username.trim().toLowerCase();
 
-      logger.log('🔄 Starting login attempt for:', loginEmail);
+      console.log('🔄 DETAILED LOGIN START:', {
+        email: loginEmail,
+        timestamp: new Date().toISOString(),
+        rememberMe: rememberMe,
+      });
 
       // Create supabase client
       const supabase = getSupabaseClient();
+      console.log('📡 Supabase client created');
 
+      console.log('🔑 Attempting signInWithPassword...');
       const { data, error } = await supabase.auth.signInWithPassword({
         email: loginEmail,
         password: password,
+      });
+
+      console.log('📊 LOGIN RESULT:', {
+        hasData: !!data,
+        hasUser: !!data?.user,
+        hasSession: !!data?.session,
+        hasError: !!error,
+        errorMessage: error?.message || 'none',
       });
 
       if (error) {
@@ -137,16 +151,14 @@ export default function LoginPage() {
         router.replace('/');
       }
     } catch (error) {
-      logger.error('❌ Login catch error:', error);
-
-      // More detailed error handling
-      if (error instanceof Error) {
-        logger.error('Error details:', {
-          message: error.message,
-          name: error.name,
-          stack: error.stack,
-        });
-      }
+      console.error('🚨 LOGIN CATCH ERROR - DETAILED:', {
+        error: error,
+        errorType: typeof error,
+        errorName: error instanceof Error ? error.name : 'unknown',
+        errorMessage: error instanceof Error ? error.message : String(error),
+        errorStack: error instanceof Error ? error.stack : 'no stack',
+        timestamp: new Date().toISOString(),
+      });
 
       setError(
         currentLanguage === 'ka'
@@ -156,8 +168,8 @@ export default function LoginPage() {
       setIsLoading(false);
     } finally {
       // Ensure loading state is always cleared
+      console.log('🧹 LOGIN CLEANUP:', { wasLoading: isLoading });
       if (isLoading) {
-        logger.log('🔄 Cleaning up loading state');
         setIsLoading(false);
       }
     }
