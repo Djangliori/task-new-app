@@ -36,7 +36,7 @@ function ResetPasswordForm() {
 
       // Parse tokens from URL hash instead of query parameters
       // Supabase delivers tokens in hash fragments (#) not query params (?)
-      const hashParams = {};
+      const hashParams: { [key: string]: string } = {};
       if (typeof window !== 'undefined' && window.location.hash) {
         const hash = window.location.hash.substring(1); // Remove the #
         const params = new URLSearchParams(hash);

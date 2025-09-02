@@ -16,8 +16,8 @@ export async function POST(request: NextRequest) {
     const protocol = host?.includes('localhost') ? 'http' : 'https';
     const baseUrl = `${protocol}://${host}`;
 
-    let result;
-    let testType;
+    let result: any;
+    let testType: string = 'Unknown test type';
 
     if (type === 'signup') {
       // Test signup email

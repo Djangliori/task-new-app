@@ -38,8 +38,9 @@ export function DatePicker({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleDateChange = (date: Date | Date[] | null) => {
-    const selectedDate = Array.isArray(date) ? date[0] : date;
+  const handleDateChange = (value: any) => {
+    const date = Array.isArray(value) ? value[0] : value;
+    const selectedDate = date instanceof Date ? date : null;
     setSelectedDate(selectedDate);
     onChange(selectedDate);
     setIsOpen(false);
