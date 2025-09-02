@@ -24,47 +24,79 @@ function ConfirmContent() {
   useEffect(() => {
     const handleEmailConfirmation = async () => {
       try {
-        const token_hash = searchParams.get('token_hash');
-        const type = searchParams.get('type');
+        // Check for hash fragment tokens first (like in reset-password)
+        let access_token, refresh_token;
+        
+        if (typeof window !== 'undefined' && window.location.hash) {
+          const hash = window.location.hash.substring(1);
+          const params = new URLSearchParams(hash);
+          access_token = params.get('access_token');
+          refresh_token = params.get('refresh_token');
+          
+          logger.log('🔍 Hash fragment tokens found:', {
+            hasAccessToken: !!access_token,
+            hasRefreshToken: !!refresh_token
+          });
+        }
+        
+        // Fallback to query params
+        if (!access_token) {
+          access_token = searchParams.get('access_token');
+          refresh_token = searchParams.get('refresh_token');
+        }
 
-        if (token_hash && type) {
+        if (access_token && refresh_token) {
           // Create supabase client only on client-side
           const supabase = getSupabaseClient();
 
-          const { error } = await supabase.auth.verifyOtp({
-            token_hash,
-            type: type as 'signup',
+          const { error } = await supabase.auth.setSession({
+            access_token,
+            refresh_token
           });
 
           if (error) {
             logger.error('❌ Confirmation error:', error);
-            setMessage('დადასტურების შეცდომა. გთხოვთ ისევ სცადოთ.');
+            setMessage(
+              currentLanguage === 'ka' 
+                ? '❌ დადასტურების შეცდომა. გთხოვთ ისევ სცადოთ.'
+                : '❌ Confirmation error. Please try again.'
+            );
             setIsSuccess(false);
           } else {
             logger.log('✅ Email confirmed successfully');
             setMessage(
-              '✅ ელ-ფოსტა წარმატებით დადასტურდა! ახლა შეგიძლიათ შემოხვიდეთ.'
+              currentLanguage === 'ka'
+                ? '✅ ელ-ფოსტა წარმატებით დადასტურდა! ახლა შეგიძლიათ შემოხვიდეთ.'
+                : '✅ Email confirmed successfully! You can now sign in.'
             );
             setIsSuccess(true);
 
-            // Redirect to login after 3 seconds
+            // Redirect to main page after 3 seconds
             setTimeout(() => {
-              router.push('/login');
+              router.push('/');
             }, 3000);
           }
         } else {
-          setMessage('❌ არასწორი დადასტურების ბმული.');
+          setMessage(
+            currentLanguage === 'ka'
+              ? '❌ არასწორი დადასტურების ბმული.'
+              : '❌ Invalid confirmation link.'
+          );
           setIsSuccess(false);
         }
       } catch (error) {
         logger.error('❌ Confirmation catch error:', error);
-        setMessage('❌ დადასტურების შეცდომა მოხდა.');
+        setMessage(
+          currentLanguage === 'ka'
+            ? '❌ დადასტურების შეცდომა მოხდა.'
+            : '❌ Confirmation error occurred.'
+        );
         setIsSuccess(false);
       }
     };
 
     handleEmailConfirmation();
-  }, [searchParams, router]);
+  }, [searchParams, router, currentLanguage]);
 
   return (
     <div
@@ -104,7 +136,10 @@ function ConfirmContent() {
             marginBottom: '16px',
           }}
         >
-          ელ-ფოსტის დადასტურება
+          {currentLanguage === 'ka' 
+            ? 'ელ-ფოსტის დადასტურება' 
+            : 'Email Confirmation'
+          }
         </h2>
 
         <p
@@ -119,33 +154,83 @@ function ConfirmContent() {
         </p>
 
         {isSuccess && (
-          <p
-            style={{
-              color: '#27ae60',
-              fontSize: '14px',
-              fontStyle: 'italic',
-            }}
-          >
-            {t('redirectingToLogin')}
-          </p>
+          <>
+            <p
+              style={{
+                color: '#27ae60',
+                fontSize: '14px',
+                fontStyle: 'italic',
+                marginBottom: '20px'
+              }}
+            >
+              {currentLanguage === 'ka'
+                ? '🙏 მადლობა რომ სარგებლობთ ჩვენი სერვისით!'
+                : '🙏 Thank you for using our service!'
+              }
+            </p>
+            <p
+              style={{
+                color: '#7f8c8d',
+                fontSize: '12px',
+                marginBottom: '20px'
+              }}
+            >
+              {currentLanguage === 'ka'
+                ? 'ავტომატურად გადამისამართება 3 წამში...'
+                : 'Automatically redirecting in 3 seconds...'
+              }
+            </p>
+          </>
         )}
 
         <button
-          onClick={() => router.push('/login')}
+          onClick={() => isSuccess ? router.push('/') : router.push('/login')}
           style={{
-            background: '#4da8da',
+            background: isSuccess ? '#27ae60' : '#4da8da',
             color: 'white',
             border: 'none',
-            padding: '12px 24px',
+            padding: '14px 28px',
             borderRadius: '8px',
             fontSize: '16px',
             fontWeight: '500',
             cursor: 'pointer',
             marginTop: '16px',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseOver={(e) => {
+            (e.target as HTMLButtonElement).style.transform = 'scale(1.05)';
+          }}
+          onMouseOut={(e) => {
+            (e.target as HTMLButtonElement).style.transform = 'scale(1)';
           }}
         >
-          {t('goToLogin')}
+          {isSuccess 
+            ? (currentLanguage === 'ka' ? '🏠 მთავარ გვერდზე გადასვლა' : '🏠 Go to Main Page')
+            : (currentLanguage === 'ka' ? '🔐 ლოგინზე გადასვლა' : '🔐 Go to Login')
+          }
         </button>
+
+        {/* Language Toggle */}
+        <div style={{ marginTop: '24px' }}>
+          <button
+            onClick={() => {
+              const newLang = currentLanguage === 'ka' ? 'en' : 'ka';
+              setCurrentLanguage(newLang);
+              localStorage.setItem('language', newLang);
+            }}
+            style={{
+              background: 'none',
+              border: '1px solid #bdc3c7',
+              color: '#7f8c8d',
+              padding: '6px 12px',
+              borderRadius: '4px',
+              fontSize: '12px',
+              cursor: 'pointer',
+            }}
+          >
+            {currentLanguage === 'ka' ? 'ENG' : 'ქართ'}
+          </button>
+        </div>
       </div>
     </div>
   );
