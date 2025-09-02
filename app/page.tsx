@@ -86,10 +86,18 @@ export default function TaskManager() {
   useEffect(() => {
     const checkUser = async () => {
       try {
-        // Check if session should be cleared (remember me was unchecked)
-        const shouldClearSession = sessionStorage.getItem(
-          'clearSessionOnClose'
-        );
+        // Check if this is a temporary session that should not persist across browser restarts
+        const isTempSessionOnly =
+          localStorage.getItem('tempSessionOnly') === 'true';
+
+        // Only clear session if it's a new browser session AND was temporary
+        const shouldClearSession =
+          isTempSessionOnly && !sessionStorage.getItem('currentSessionActive');
+
+        // Mark current session as active (this clears on browser close)
+        if (!sessionStorage.getItem('currentSessionActive')) {
+          sessionStorage.setItem('currentSessionActive', 'true');
+        }
 
         const supabase = getSupabaseClient();
         const {
@@ -99,9 +107,11 @@ export default function TaskManager() {
 
         // Clear session if remember me was unchecked and this is a new browser session
         if (shouldClearSession && session) {
-          logger.log('🔄 Clearing session due to remember me preference');
+          console.log(
+            '🔄 Clearing temp session - new browser session detected'
+          );
           await supabase.auth.signOut();
-          sessionStorage.removeItem('clearSessionOnClose');
+          localStorage.removeItem('tempSessionOnly');
           router.replace('/login');
           return;
         }

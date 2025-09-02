@@ -138,12 +138,16 @@ export default function LoginPage() {
         // Save remember me preference for next time
         localStorage.setItem('rememberMe', rememberMe.toString());
 
-        // If remember me is unchecked, clear session on next page load
+        // If remember me is unchecked, session should expire when browser closes
+        // But NOT immediately! Only on browser restart, not same-session navigation
         if (!rememberMe) {
-          // Set a flag to clear session when browser/tab closes
-          sessionStorage.setItem('clearSessionOnClose', 'true');
+          // Mark that this session should not persist across browser restarts
+          localStorage.setItem('tempSessionOnly', 'true');
+          // Remove any previous clearSessionOnClose flag for this session
+          sessionStorage.removeItem('clearSessionOnClose');
         } else {
-          // Remove the flag if remember me is checked
+          // Remember me is checked - session persists across browser restarts
+          localStorage.removeItem('tempSessionOnly');
           sessionStorage.removeItem('clearSessionOnClose');
         }
 
