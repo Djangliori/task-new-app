@@ -19,14 +19,32 @@ export default function RootLayout({
             __html: `
               // Global error tracking for debugging
               window.addEventListener('unhandledrejection', function(event) {
-                console.error('🚨 UNCAUGHT PROMISE REJECTION DETAILS:', {
+                // Try to get as much detail as possible about the rejection
+                let reasonDetails;
+                try {
+                  if (typeof event.reason === 'object') {
+                    reasonDetails = JSON.stringify(event.reason, null, 2);
+                  } else {
+                    reasonDetails = String(event.reason);
+                  }
+                } catch (e) {
+                  reasonDetails = 'Could not stringify object: ' + String(event.reason);
+                }
+                
+                console.error('🚨 PROMISE REJECTION FULL DETAILS:', {
                   reason: event.reason,
                   reasonType: typeof event.reason,
+                  reasonStringified: reasonDetails,
                   stack: event.reason?.stack || 'No stack available',
-                  message: event.reason?.message || String(event.reason),
+                  message: event.reason?.message || 'No message',
+                  name: event.reason?.name || 'No name',
                   url: window.location.href,
-                  timestamp: new Date().toISOString()
+                  timestamp: new Date().toISOString(),
+                  allKeys: event.reason ? Object.keys(event.reason) : 'No keys'
                 });
+                
+                // Also log the full event object
+                console.error('🚨 FULL EVENT OBJECT:', event);
               });
               
               window.addEventListener('error', function(event) {

@@ -100,9 +100,20 @@ export default function LoginPage() {
         hasData: !!data,
         hasUser: !!data?.user,
         hasSession: !!data?.session,
+        userId: data?.user?.id || 'none',
+        userEmail: data?.user?.email || 'none',
         hasError: !!error,
         errorMessage: error?.message || 'none',
+        errorName: error?.name || 'none',
       });
+
+      // Log the full objects for debugging
+      if (data) {
+        console.log('📦 FULL LOGIN DATA:', data);
+      }
+      if (error) {
+        console.log('❌ FULL LOGIN ERROR:', error);
+      }
 
       if (error) {
         logger.error('❌ Supabase Auth Error:', error.message);
@@ -146,7 +157,11 @@ export default function LoginPage() {
         // Wait a bit to ensure session is fully established
         await new Promise((resolve) => setTimeout(resolve, 100));
 
-        logger.log('🔄 Redirecting to main page...');
+        console.log('🔄 SUCCESS! Redirecting to main page...', {
+          clearSessionFlag: sessionStorage.getItem('clearSessionOnClose'),
+          rememberMeSet: localStorage.getItem('rememberMe'),
+        });
+
         // Use replace instead of push to prevent back navigation issues
         router.replace('/');
       }
