@@ -117,11 +117,13 @@ export default function LoginPage() {
           email: data.user.email,
           rememberMe: rememberMe,
           sessionPersisted: rememberMe,
+          clearSessionFlag: sessionStorage.getItem('clearSessionOnClose'),
         });
 
         // Wait a bit to ensure session is fully established
         await new Promise((resolve) => setTimeout(resolve, 100));
 
+        logger.log('🔄 Redirecting to main page...');
         // Use replace instead of push to prevent back navigation issues
         router.replace('/');
       }

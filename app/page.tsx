@@ -106,6 +106,14 @@ export default function TaskManager() {
           return;
         }
 
+        // Debug logging for session state
+        logger.log('🔍 Session check:', {
+          hasSession: !!session,
+          hasError: !!error,
+          shouldClearSession: !!shouldClearSession,
+          userId: session?.user?.id || 'none',
+        });
+
         if (!session || error) {
           logger.log('❌ No valid session found, redirecting to login');
           // Add a small delay to prevent rapid redirects that could cause loops
