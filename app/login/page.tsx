@@ -206,6 +206,7 @@ export default function LoginPage() {
                   type="checkbox"
                   checked={showPassword}
                   onChange={(e) => setShowPassword(e.target.checked)}
+                  tabIndex={-1}
                   style={{
                     cursor: 'pointer',
                     transform: 'scale(0.9)',

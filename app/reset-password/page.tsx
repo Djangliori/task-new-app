@@ -310,6 +310,7 @@ function ResetPasswordForm() {
                   type="checkbox"
                   checked={showOldPassword}
                   onChange={(e) => setShowOldPassword(e.target.checked)}
+                  tabIndex={-1}
                   style={{
                     cursor: 'pointer',
                     transform: 'scale(0.9)',
@@ -364,6 +365,7 @@ function ResetPasswordForm() {
                   type="checkbox"
                   checked={showPassword}
                   onChange={(e) => setShowPassword(e.target.checked)}
+                  tabIndex={-1}
                   style={{
                     cursor: 'pointer',
                     transform: 'scale(0.9)',
@@ -418,6 +420,7 @@ function ResetPasswordForm() {
                   type="checkbox"
                   checked={showConfirmPassword}
                   onChange={(e) => setShowConfirmPassword(e.target.checked)}
+                  tabIndex={-1}
                   style={{
                     cursor: 'pointer',
                     transform: 'scale(0.9)',

@@ -80,10 +80,7 @@ export default function RegisterPage() {
         email: email.trim().toLowerCase(),
         password: password,
         options: {
-          emailRedirectTo:
-            process.env.NODE_ENV === 'production'
-              ? 'https://task-new-app.vercel.app/auth/confirm'
-              : `${window.location.origin}/auth/confirm`,
+          emailRedirectTo: 'https://task-new-app.vercel.app/auth/confirm',
           data: {
             first_name: firstName.trim(),
             last_name: lastName.trim(),
@@ -150,11 +147,6 @@ export default function RegisterPage() {
 
             if (signInError) {
               logger.error('Auto-login failed:', signInError);
-              alert(
-                currentLanguage === 'ka'
-                  ? '✅ რეგისტრაცია დასრულდა! გთხოვთ შეამოწმოთ ელ-ფოსტა და შემდეგ შედით.'
-                  : '✅ Registration completed! Please check your email and then sign in.'
-              );
               router.push('/login');
             } else {
               logger.log('✅ Auto-login successful');
@@ -166,11 +158,6 @@ export default function RegisterPage() {
           }
         } else {
           // Production or already has session
-          alert(
-            currentLanguage === 'ka'
-              ? '✅ რეგისტრაცია წარმატებით დასრულდა! გთხოვთ შეამოწმოთ თქვენი ელ-ფოსტა დასადასტურებლად.'
-              : '✅ Registration successful! Please check your email for confirmation.'
-          );
           router.push('/login');
         }
       }
@@ -338,6 +325,7 @@ export default function RegisterPage() {
                   type="checkbox"
                   checked={showPassword}
                   onChange={(e) => setShowPassword(e.target.checked)}
+                  tabIndex={-1}
                   style={{
                     cursor: 'pointer',
                     transform: 'scale(0.9)',
@@ -396,6 +384,7 @@ export default function RegisterPage() {
                   type="checkbox"
                   checked={showConfirmPassword}
                   onChange={(e) => setShowConfirmPassword(e.target.checked)}
+                  tabIndex={-1}
                   style={{
                     cursor: 'pointer',
                     transform: 'scale(0.9)',

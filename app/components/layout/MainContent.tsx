@@ -83,6 +83,7 @@ export function MainContent({
                         type="checkbox"
                         checked={task.completed}
                         onChange={() => onToggleTask(task.id, task.completed)}
+                        tabIndex={-1}
                         style={{
                           marginRight: '12px',
                           transform: 'scale(1.2)',
@@ -397,6 +398,7 @@ export function MainContent({
                           type="checkbox"
                           checked={task.completed}
                           onChange={() => onToggleTask(task.id, task.completed)}
+                          tabIndex={-1}
                           style={{
                             marginRight: '12px',
                             transform: 'scale(1.2)',
