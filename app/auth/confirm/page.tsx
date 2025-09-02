@@ -11,8 +11,10 @@ function ConfirmContent() {
   const searchParams = useSearchParams();
   const [currentLanguage, setCurrentLanguage] = useState<'ka' | 'en'>('ka');
   const { t } = useTranslation(currentLanguage);
-  const [message, setMessage] = useState('მიმდინარეობს დადასტურება...');
+  const [message, setMessage] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isReady, setIsReady] = useState(false);
+  const [tokens, setTokens] = useState<{access_token: string, refresh_token: string} | null>(null);
 
   // Load language from localStorage
   useEffect(() => {
@@ -22,7 +24,7 @@ function ConfirmContent() {
   }, []);
 
   useEffect(() => {
-    const handleEmailConfirmation = async () => {
+    const extractTokens = () => {
       try {
         // Check for hash fragment tokens first (like in reset-password)
         let access_token, refresh_token;
@@ -49,36 +51,13 @@ function ConfirmContent() {
         }
 
         if (access_token && refresh_token) {
-          // Create supabase client only on client-side
-          const supabase = getSupabaseClient();
-
-          const { error } = await supabase.auth.setSession({
-            access_token,
-            refresh_token,
-          });
-
-          if (error) {
-            logger.error('❌ Confirmation error:', error);
-            setMessage(
-              currentLanguage === 'ka'
-                ? '❌ დადასტურების შეცდომა. გთხოვთ ისევ სცადოთ.'
-                : '❌ Confirmation error. Please try again.'
-            );
-            setIsSuccess(false);
-          } else {
-            logger.log('✅ Email confirmed successfully');
-            setMessage(
-              currentLanguage === 'ka'
-                ? '✅ ელ-ფოსტა წარმატებით დადასტურდა! ახლა შეგიძლიათ შემოხვიდეთ.'
-                : '✅ Email confirmed successfully! You can now sign in.'
-            );
-            setIsSuccess(true);
-
-            // Redirect to main page after 3 seconds
-            setTimeout(() => {
-              router.push('/');
-            }, 3000);
-          }
+          setTokens({ access_token, refresh_token });
+          setIsReady(true);
+          setMessage(
+            currentLanguage === 'ka'
+              ? 'გთხოვთ, დაადასტუროთ თქვენი ელ-ფოსტის მისამართი.'
+              : 'Please confirm your email address.'
+          );
         } else {
           logger.log('❌ No tokens found:', {
             windowExists: typeof window !== 'undefined',
@@ -95,21 +74,71 @@ function ConfirmContent() {
               ? '❌ არასწორი დადასტურების ბმული.'
               : '❌ Invalid confirmation link.'
           );
-          setIsSuccess(false);
+          setIsReady(false);
         }
       } catch (error) {
-        logger.error('❌ Confirmation catch error:', error);
+        logger.error('❌ Token extraction error:', error);
         setMessage(
           currentLanguage === 'ka'
             ? '❌ დადასტურების შეცდომა მოხდა.'
             : '❌ Confirmation error occurred.'
         );
-        setIsSuccess(false);
+        setIsReady(false);
       }
     };
 
-    handleEmailConfirmation();
-  }, [searchParams, router, currentLanguage]);
+    extractTokens();
+  }, [searchParams, currentLanguage]);
+
+  const handleManualConfirmation = async () => {
+    if (!tokens) return;
+
+    try {
+      setMessage(
+        currentLanguage === 'ka'
+          ? 'დადასტურება მიმდინარეობს...'
+          : 'Confirming...'
+      );
+
+      const supabase = getSupabaseClient();
+
+      const { error } = await supabase.auth.setSession({
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
+      });
+
+      if (error) {
+        logger.error('❌ Manual confirmation error:', error);
+        setMessage(
+          currentLanguage === 'ka'
+            ? '❌ დადასტურების შეცდომა. გთხოვთ ისევ სცადოთ.'
+            : '❌ Confirmation error. Please try again.'
+        );
+        setIsSuccess(false);
+      } else {
+        logger.log('✅ Email confirmed successfully');
+        setMessage(
+          currentLanguage === 'ka'
+            ? '✅ ელ-ფოსტა წარმატებით დადასტურდა! ახლა შეგიძლიათ შემოხვიდეთ.'
+            : '✅ Email confirmed successfully! You can now sign in.'
+        );
+        setIsSuccess(true);
+
+        // Redirect to login page after 3 seconds
+        setTimeout(() => {
+          router.push('/login');
+        }, 3000);
+      }
+    } catch (error) {
+      logger.error('❌ Manual confirmation catch error:', error);
+      setMessage(
+        currentLanguage === 'ka'
+          ? '❌ დადასტურების შეცდომა მოხდა.'
+          : '❌ Confirmation error occurred.'
+      );
+      setIsSuccess(false);
+    }
+  };
 
   return (
     <div
@@ -143,7 +172,7 @@ function ConfirmContent() {
             marginBottom: '24px',
           }}
         >
-          {isSuccess ? '✅' : '⏳'}
+          {isSuccess ? '✅' : isReady ? '📧' : '⏳'}
         </div>
 
         <h2
@@ -192,41 +221,72 @@ function ConfirmContent() {
               }}
             >
               {currentLanguage === 'ka'
-                ? 'ავტომატურად გადამისამართება 3 წამში...'
-                : 'Automatically redirecting in 3 seconds...'}
+                ? 'ლოგინ გვერდზე გადამისამართება 3 წამში...'
+                : 'Redirecting to login page in 3 seconds...'}
             </p>
           </>
         )}
 
-        <button
-          onClick={() => (isSuccess ? router.push('/') : router.push('/login'))}
-          style={{
-            background: isSuccess ? '#27ae60' : '#4da8da',
-            color: 'white',
-            border: 'none',
-            padding: '14px 28px',
-            borderRadius: '8px',
-            fontSize: '16px',
-            fontWeight: '500',
-            cursor: 'pointer',
-            marginTop: '16px',
-            transition: 'all 0.2s ease',
-          }}
-          onMouseOver={(e) => {
-            (e.target as HTMLButtonElement).style.transform = 'scale(1.05)';
-          }}
-          onMouseOut={(e) => {
-            (e.target as HTMLButtonElement).style.transform = 'scale(1)';
-          }}
-        >
-          {isSuccess
-            ? currentLanguage === 'ka'
-              ? '🏠 მთავარ გვერდზე გადასვლა'
-              : '🏠 Go to Main Page'
-            : currentLanguage === 'ka'
+        {/* Confirmation Button or Navigation Button */}
+        {isReady && !isSuccess ? (
+          <button
+            onClick={handleManualConfirmation}
+            style={{
+              background: '#27ae60',
+              color: 'white',
+              border: 'none',
+              padding: '16px 32px',
+              borderRadius: '8px',
+              fontSize: '18px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              marginTop: '24px',
+              transition: 'all 0.2s ease',
+              boxShadow: '0 4px 12px rgba(39, 174, 96, 0.3)',
+            }}
+            onMouseOver={(e) => {
+              (e.target as HTMLButtonElement).style.transform = 'scale(1.05)';
+              (e.target as HTMLButtonElement).style.boxShadow = '0 6px 16px rgba(39, 174, 96, 0.4)';
+            }}
+            onMouseOut={(e) => {
+              (e.target as HTMLButtonElement).style.transform = 'scale(1)';
+              (e.target as HTMLButtonElement).style.boxShadow = '0 4px 12px rgba(39, 174, 96, 0.3)';
+            }}
+          >
+            {currentLanguage === 'ka'
+              ? '✅ დადასტურება'
+              : '✅ Confirm Email'}
+          </button>
+        ) : (
+          <button
+            onClick={() => router.push('/login')}
+            style={{
+              background: isSuccess ? '#4da8da' : '#95a5a6',
+              color: 'white',
+              border: 'none',
+              padding: '14px 28px',
+              borderRadius: '8px',
+              fontSize: '16px',
+              fontWeight: '500',
+              cursor: isSuccess ? 'pointer' : 'not-allowed',
+              marginTop: '16px',
+              transition: 'all 0.2s ease',
+            }}
+            disabled={!isSuccess && !isReady}
+            onMouseOver={(e) => {
+              if (isSuccess) {
+                (e.target as HTMLButtonElement).style.transform = 'scale(1.05)';
+              }
+            }}
+            onMouseOut={(e) => {
+              (e.target as HTMLButtonElement).style.transform = 'scale(1)';
+            }}
+          >
+            {currentLanguage === 'ka'
               ? '🔐 ლოგინზე გადასვლა'
               : '🔐 Go to Login'}
-        </button>
+          </button>
+        )}
 
         {/* Language Toggle */}
         <div style={{ marginTop: '24px' }}>
