@@ -56,7 +56,23 @@ export default function LoginPage() {
       }
     };
 
+    // Add global error handler for uncaught promises
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      logger.error('🚨 Unhandled promise rejection:', event.reason);
+      event.preventDefault(); // Prevent console error
+    };
+
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
     checkAuth();
+
+    // Cleanup
+    return () => {
+      window.removeEventListener(
+        'unhandledrejection',
+        handleUnhandledRejection
+      );
+    };
   }, [router]);
 
   const toggleLanguage = () => {

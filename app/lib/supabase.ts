@@ -1,21 +1,29 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-// Create a new Supabase client each time to avoid singleton issues
+// Global singleton instance
+let supabaseClient: SupabaseClient | null = null;
+
+// Proper singleton pattern to prevent multiple instances
 export const getSupabaseClient = (): SupabaseClient => {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      auth: {
-        persistSession: true,
-        storageKey: 'task-manager-auth',
-        storage:
-          typeof window !== 'undefined' ? window.localStorage : undefined,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-      },
-    }
-  );
+  // Only create one instance per application lifecycle
+  if (!supabaseClient) {
+    console.log('🔥 Creating new Supabase client instance');
+    supabaseClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        auth: {
+          persistSession: true,
+          storageKey: 'task-manager-auth',
+          storage:
+            typeof window !== 'undefined' ? window.localStorage : undefined,
+          autoRefreshToken: true,
+          detectSessionInUrl: true,
+        },
+      }
+    );
+  }
+  return supabaseClient;
 };
 
 // Types
