@@ -26,19 +26,19 @@ function ConfirmContent() {
       try {
         // Check for hash fragment tokens first (like in reset-password)
         let access_token, refresh_token;
-        
+
         if (typeof window !== 'undefined' && window.location.hash) {
           const hash = window.location.hash.substring(1);
           const params = new URLSearchParams(hash);
           access_token = params.get('access_token');
           refresh_token = params.get('refresh_token');
-          
+
           logger.log('🔍 Hash fragment tokens found:', {
             hasAccessToken: !!access_token,
-            hasRefreshToken: !!refresh_token
+            hasRefreshToken: !!refresh_token,
           });
         }
-        
+
         // Fallback to query params
         if (!access_token) {
           access_token = searchParams.get('access_token');
@@ -51,13 +51,13 @@ function ConfirmContent() {
 
           const { error } = await supabase.auth.setSession({
             access_token,
-            refresh_token
+            refresh_token,
           });
 
           if (error) {
             logger.error('❌ Confirmation error:', error);
             setMessage(
-              currentLanguage === 'ka' 
+              currentLanguage === 'ka'
                 ? '❌ დადასტურების შეცდომა. გთხოვთ ისევ სცადოთ.'
                 : '❌ Confirmation error. Please try again.'
             );
@@ -136,10 +136,9 @@ function ConfirmContent() {
             marginBottom: '16px',
           }}
         >
-          {currentLanguage === 'ka' 
-            ? 'ელ-ფოსტის დადასტურება' 
-            : 'Email Confirmation'
-          }
+          {currentLanguage === 'ka'
+            ? 'ელ-ფოსტის დადასტურება'
+            : 'Email Confirmation'}
         </h2>
 
         <p
@@ -160,31 +159,29 @@ function ConfirmContent() {
                 color: '#27ae60',
                 fontSize: '14px',
                 fontStyle: 'italic',
-                marginBottom: '20px'
+                marginBottom: '20px',
               }}
             >
               {currentLanguage === 'ka'
                 ? '🙏 მადლობა რომ სარგებლობთ ჩვენი სერვისით!'
-                : '🙏 Thank you for using our service!'
-              }
+                : '🙏 Thank you for using our service!'}
             </p>
             <p
               style={{
                 color: '#7f8c8d',
                 fontSize: '12px',
-                marginBottom: '20px'
+                marginBottom: '20px',
               }}
             >
               {currentLanguage === 'ka'
                 ? 'ავტომატურად გადამისამართება 3 წამში...'
-                : 'Automatically redirecting in 3 seconds...'
-              }
+                : 'Automatically redirecting in 3 seconds...'}
             </p>
           </>
         )}
 
         <button
-          onClick={() => isSuccess ? router.push('/') : router.push('/login')}
+          onClick={() => (isSuccess ? router.push('/') : router.push('/login'))}
           style={{
             background: isSuccess ? '#27ae60' : '#4da8da',
             color: 'white',
@@ -204,10 +201,13 @@ function ConfirmContent() {
             (e.target as HTMLButtonElement).style.transform = 'scale(1)';
           }}
         >
-          {isSuccess 
-            ? (currentLanguage === 'ka' ? '🏠 მთავარ გვერდზე გადასვლა' : '🏠 Go to Main Page')
-            : (currentLanguage === 'ka' ? '🔐 ლოგინზე გადასვლა' : '🔐 Go to Login')
-          }
+          {isSuccess
+            ? currentLanguage === 'ka'
+              ? '🏠 მთავარ გვერდზე გადასვლა'
+              : '🏠 Go to Main Page'
+            : currentLanguage === 'ka'
+              ? '🔐 ლოგინზე გადასვლა'
+              : '🔐 Go to Login'}
         </button>
 
         {/* Language Toggle */}
