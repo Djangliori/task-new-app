@@ -97,19 +97,16 @@ export default function TaskManager() {
           return;
         }
 
-        // Get user profile from users table
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
+        // Use auth user metadata instead of users table to avoid RLS issues
+        const userData = {
+          id: session.user.id,
+          email: session.user.email || '',
+          first_name: session.user.user_metadata?.first_name || 'User',
+          last_name: session.user.user_metadata?.last_name || '',
+          created_at: session.user.created_at,
+        };
 
-        if (userError || !userData) {
-          logger.error('Error loading user profile:', userError);
-          router.replace('/login');
-          return;
-        }
-
+        logger.log('✅ Using auth metadata for user:', userData);
         setUser(userData);
         await loadUserData(session.user.id);
         setLoading(false);
