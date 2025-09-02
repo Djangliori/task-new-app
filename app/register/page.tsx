@@ -85,11 +85,11 @@ export default function RegisterPage() {
           return window.location.origin;
         }
         // Server side fallback
-        return process.env.NODE_ENV === 'development' 
-          ? 'http://localhost:3010' 
+        return process.env.NODE_ENV === 'development'
+          ? 'http://localhost:3010'
           : 'https://task-new-app.vercel.app';
       };
-      
+
       const baseUrl = getBaseUrl();
       const emailRedirectUrl = `${baseUrl}/auth/confirm`;
 
@@ -97,7 +97,7 @@ export default function RegisterPage() {
         email: email.trim().toLowerCase(),
         redirectUrl: emailRedirectUrl,
         environment: process.env.NODE_ENV,
-        baseUrl
+        baseUrl,
       });
 
       const { data, error } = await supabase.auth.signUp({
@@ -124,7 +124,7 @@ export default function RegisterPage() {
           userId: data.user.id,
           email: data.user.email,
           emailConfirmed: data.user.email_confirmed_at,
-          needsEmailConfirmation: !data.session
+          needsEmailConfirmation: !data.session,
         });
         // Create profile using service role to bypass RLS during registration
         try {
@@ -192,9 +192,11 @@ export default function RegisterPage() {
           if (!data.session) {
             // Email confirmation required
             setError(''); // Clear any errors
-            setMessage(currentLanguage === 'ka' 
-              ? '✅ რეგისტრაცია წარმატებით დასრულდა! გთხოვთ, შეამოწმოთ თქვენი ელ-ფოსტა დადასტურების ბმულისთვის.' 
-              : '✅ Registration successful! Please check your email for a confirmation link.');
+            setMessage(
+              currentLanguage === 'ka'
+                ? '✅ რეგისტრაცია წარმატებით დასრულდა! გთხოვთ, შეამოწმოთ თქვენი ელ-ფოსტა დადასტურების ბმულისთვის.'
+                : '✅ Registration successful! Please check your email for a confirmation link.'
+            );
             // Don't redirect immediately, let user read the message
             setTimeout(() => {
               router.push('/login');
