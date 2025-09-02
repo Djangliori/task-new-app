@@ -38,7 +38,7 @@ function ConfirmContent() {
             cleanedHash: hash,
             accessToken: access_token ? 'FOUND' : 'MISSING',
             refreshToken: refresh_token ? 'FOUND' : 'MISSING',
-            allParams: Object.fromEntries(params.entries())
+            allParams: Object.fromEntries(params.entries()),
           });
         }
 
@@ -83,10 +83,13 @@ function ConfirmContent() {
           logger.log('❌ No tokens found:', {
             windowExists: typeof window !== 'undefined',
             hasHash: typeof window !== 'undefined' && !!window.location.hash,
-            hashContent: typeof window !== 'undefined' ? window.location.hash : 'NO_WINDOW',
-            searchParamsToken: searchParams.get('access_token')
+            hashContent:
+              typeof window !== 'undefined'
+                ? window.location.hash
+                : 'NO_WINDOW',
+            searchParamsToken: searchParams.get('access_token'),
           });
-          
+
           setMessage(
             currentLanguage === 'ka'
               ? '❌ არასწორი დადასტურების ბმული.'
