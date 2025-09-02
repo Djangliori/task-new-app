@@ -88,40 +88,13 @@ export default function LoginPage() {
     try {
       const loginEmail = username.trim().toLowerCase();
 
-      console.log('🔄 DETAILED LOGIN START:', {
-        email: loginEmail,
-        timestamp: new Date().toISOString(),
-        rememberMe: rememberMe,
-      });
-
       // Create supabase client
       const supabase = getSupabaseClient();
-      console.log('📡 Supabase client created');
 
-      console.log('🔑 Attempting signInWithPassword...');
       const { data, error } = await supabase.auth.signInWithPassword({
         email: loginEmail,
         password: password,
       });
-
-      console.log('📊 LOGIN RESULT:', {
-        hasData: !!data,
-        hasUser: !!data?.user,
-        hasSession: !!data?.session,
-        userId: data?.user?.id || 'none',
-        userEmail: data?.user?.email || 'none',
-        hasError: !!error,
-        errorMessage: error?.message || 'none',
-        errorName: error?.name || 'none',
-      });
-
-      // Log the full objects for debugging
-      if (data) {
-        console.log('📦 FULL LOGIN DATA:', data);
-      }
-      if (error) {
-        console.log('❌ FULL LOGIN ERROR:', error);
-      }
 
       if (error) {
         logger.error('❌ Supabase Auth Error:', error.message);
@@ -169,24 +142,10 @@ export default function LoginPage() {
         // Wait a bit to ensure session is fully established
         await new Promise((resolve) => setTimeout(resolve, 100));
 
-        console.log('🔄 SUCCESS! Redirecting to main page...', {
-          clearSessionFlag: sessionStorage.getItem('clearSessionOnClose'),
-          rememberMeSet: localStorage.getItem('rememberMe'),
-        });
-
         // Use replace instead of push to prevent back navigation issues
         router.replace('/');
       }
-    } catch (error) {
-      console.error('🚨 LOGIN CATCH ERROR - DETAILED:', {
-        error: error,
-        errorType: typeof error,
-        errorName: error instanceof Error ? error.name : 'unknown',
-        errorMessage: error instanceof Error ? error.message : String(error),
-        errorStack: error instanceof Error ? error.stack : 'no stack',
-        timestamp: new Date().toISOString(),
-      });
-
+    } catch {
       setError(
         currentLanguage === 'ka'
           ? 'შესვლისას შეცდომა მოხდა. გთხოვთ ისევ სცადოთ.'
@@ -195,7 +154,6 @@ export default function LoginPage() {
       setIsLoading(false);
     } finally {
       // Ensure loading state is always cleared
-      console.log('🧹 LOGIN CLEANUP:', { wasLoading: isLoading });
       if (isLoading) {
         setIsLoading(false);
       }

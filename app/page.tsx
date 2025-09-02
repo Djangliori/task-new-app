@@ -107,9 +107,6 @@ export default function TaskManager() {
 
         // Clear session if remember me was unchecked and this is a new browser session
         if (shouldClearSession && session) {
-          console.log(
-            '🔄 Clearing temp session - new browser session detected'
-          );
           await supabase.auth.signOut();
           localStorage.removeItem('tempSessionOnly');
           router.replace('/login');
