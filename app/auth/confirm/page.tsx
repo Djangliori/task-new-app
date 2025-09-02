@@ -33,9 +33,12 @@ function ConfirmContent() {
           access_token = params.get('access_token');
           refresh_token = params.get('refresh_token');
 
-          logger.log('🔍 Hash fragment tokens found:', {
-            hasAccessToken: !!access_token,
-            hasRefreshToken: !!refresh_token,
+          logger.log('🔍 Hash fragment debug:', {
+            fullHash: window.location.hash,
+            cleanedHash: hash,
+            accessToken: access_token ? 'FOUND' : 'MISSING',
+            refreshToken: refresh_token ? 'FOUND' : 'MISSING',
+            allParams: Object.fromEntries(params.entries())
           });
         }
 
@@ -77,6 +80,13 @@ function ConfirmContent() {
             }, 3000);
           }
         } else {
+          logger.log('❌ No tokens found:', {
+            windowExists: typeof window !== 'undefined',
+            hasHash: typeof window !== 'undefined' && !!window.location.hash,
+            hashContent: typeof window !== 'undefined' ? window.location.hash : 'NO_WINDOW',
+            searchParamsToken: searchParams.get('access_token')
+          });
+          
           setMessage(
             currentLanguage === 'ka'
               ? '❌ არასწორი დადასტურების ბმული.'
@@ -106,6 +116,9 @@ function ConfirmContent() {
         justifyContent: 'center',
         minHeight: '100vh',
         backgroundColor: '#f8f9fa',
+        width: '100%',
+        padding: '20px',
+        boxSizing: 'border-box',
       }}
     >
       <div
@@ -116,7 +129,9 @@ function ConfirmContent() {
           boxShadow: '0 4px 6px rgba(0, 0, 0, 0.07)',
           textAlign: 'center',
           maxWidth: '500px',
-          width: '90%',
+          width: '100%',
+          margin: '0 auto',
+          position: 'relative',
         }}
       >
         <div
