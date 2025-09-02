@@ -86,8 +86,8 @@ export default function RegisterPage() {
         }
         // Server side fallback
         return process.env.NODE_ENV === 'development'
-          ? 'http://localhost:3010'
-          : 'https://task-new-app.vercel.app';
+          ? 'http://localhost:3000'
+          : 'https://task-manager-rho-black.vercel.app';
       };
 
       const baseUrl = getBaseUrl();
