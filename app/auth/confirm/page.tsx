@@ -14,7 +14,10 @@ function ConfirmContent() {
   const [message, setMessage] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
   const [isReady, setIsReady] = useState(false);
-  const [tokens, setTokens] = useState<{access_token: string, refresh_token: string} | null>(null);
+  const [tokens, setTokens] = useState<{
+    access_token: string;
+    refresh_token: string;
+  } | null>(null);
 
   // Load language from localStorage
   useEffect(() => {
@@ -246,16 +249,16 @@ function ConfirmContent() {
             }}
             onMouseOver={(e) => {
               (e.target as HTMLButtonElement).style.transform = 'scale(1.05)';
-              (e.target as HTMLButtonElement).style.boxShadow = '0 6px 16px rgba(39, 174, 96, 0.4)';
+              (e.target as HTMLButtonElement).style.boxShadow =
+                '0 6px 16px rgba(39, 174, 96, 0.4)';
             }}
             onMouseOut={(e) => {
               (e.target as HTMLButtonElement).style.transform = 'scale(1)';
-              (e.target as HTMLButtonElement).style.boxShadow = '0 4px 12px rgba(39, 174, 96, 0.3)';
+              (e.target as HTMLButtonElement).style.boxShadow =
+                '0 4px 12px rgba(39, 174, 96, 0.3)';
             }}
           >
-            {currentLanguage === 'ka'
-              ? '✅ დადასტურება'
-              : '✅ Confirm Email'}
+            {currentLanguage === 'ka' ? '✅ დადასტურება' : '✅ Confirm Email'}
           </button>
         ) : (
           <button
