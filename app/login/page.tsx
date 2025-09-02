@@ -67,11 +67,20 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Prevent double submissions
+    if (isLoading) {
+      logger.log('⚠️ Login already in progress, ignoring duplicate submission');
+      return;
+    }
+
     setIsLoading(true);
     setError('');
 
     try {
       const loginEmail = username.trim().toLowerCase();
+
+      logger.log('🔄 Starting login attempt for:', loginEmail);
 
       // Create supabase client
       const supabase = getSupabaseClient();
@@ -129,8 +138,28 @@ export default function LoginPage() {
       }
     } catch (error) {
       logger.error('❌ Login catch error:', error);
-      setError(t('errorWrongCredentials'));
+
+      // More detailed error handling
+      if (error instanceof Error) {
+        logger.error('Error details:', {
+          message: error.message,
+          name: error.name,
+          stack: error.stack,
+        });
+      }
+
+      setError(
+        currentLanguage === 'ka'
+          ? 'შესვლისას შეცდომა მოხდა. გთხოვთ ისევ სცადოთ.'
+          : 'An error occurred during login. Please try again.'
+      );
       setIsLoading(false);
+    } finally {
+      // Ensure loading state is always cleared
+      if (isLoading) {
+        logger.log('🔄 Cleaning up loading state');
+        setIsLoading(false);
+      }
     }
   };
 
