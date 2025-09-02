@@ -19,9 +19,10 @@ But the actual app is deployed at: `task-manager-rho-black.vercel.app`
 #### Should be (Correct):
 - Site URL: `https://task-manager-rho-black.vercel.app`
 - Redirect URLs:
-  - `https://task-manager-rho-black.vercel.app/auth/confirm`
-  - `https://task-manager-rho-black.vercel.app/reset-password`
-  - `http://localhost:3000/auth/confirm` (for development)
+  - `https://task-manager-rho-black.vercel.app/auth/confirm` (email confirmation)
+  - `https://task-manager-rho-black.vercel.app/reset-password` (password reset)
+  - `http://localhost:3000/auth/confirm` (development - email confirmation)
+  - `http://localhost:3000/reset-password` (development - password reset)
 
 ### 3. Save Changes
 
