@@ -1,6 +1,6 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-// Singleton instance
+// Singleton instance with default persistent session
 let supabaseClient: SupabaseClient | null = null;
 
 // Helper function to get Supabase client (singleton pattern)
@@ -8,7 +8,14 @@ export const getSupabaseClient = (): SupabaseClient => {
   if (!supabaseClient) {
     supabaseClient = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        auth: {
+          persistSession: true,
+          storageKey: 'task-manager-auth',
+          storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+        }
+      }
     );
   }
   return supabaseClient;

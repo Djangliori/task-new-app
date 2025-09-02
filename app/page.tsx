@@ -86,10 +86,21 @@ export default function TaskManager() {
   useEffect(() => {
     const checkUser = async () => {
       try {
+        // Check if session should be cleared (remember me was unchecked)
+        const shouldClearSession = sessionStorage.getItem('clearSessionOnClose');
+        
         const supabase = getSupabaseClient();
         const {
           data: { session },
         } = await supabase.auth.getSession();
+
+        // Clear session if remember me was unchecked and this is a new browser session
+        if (shouldClearSession && session) {
+          await supabase.auth.signOut();
+          sessionStorage.removeItem('clearSessionOnClose');
+          router.replace('/login');
+          return;
+        }
 
         if (!session) {
           // Immediate redirect to login - no loading screen

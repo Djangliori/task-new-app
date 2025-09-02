@@ -64,17 +64,12 @@ export default function LoginPage() {
     try {
       const loginEmail = username.trim().toLowerCase();
 
-      // Create supabase client only when needed
+      // Create supabase client
       const supabase = getSupabaseClient();
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email: loginEmail,
-        password: password,
-        options: {
-          // If "remember me" is checked, session persists across browser restarts
-          // If unchecked, session will be temporary (expires when browser closes)
-          persistSession: rememberMe
-        }
+        password: password
       });
 
       if (error) {
@@ -98,6 +93,15 @@ export default function LoginPage() {
       } else if (data.user) {
         // Save remember me preference for next time
         localStorage.setItem('rememberMe', rememberMe.toString());
+        
+        // If remember me is unchecked, clear session on next page load
+        if (!rememberMe) {
+          // Set a flag to clear session when browser/tab closes
+          sessionStorage.setItem('clearSessionOnClose', 'true');
+        } else {
+          // Remove the flag if remember me is checked
+          sessionStorage.removeItem('clearSessionOnClose');
+        }
         
         logger.log('✅ Login successful:', {
           email: data.user.email,
