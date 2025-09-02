@@ -19,6 +19,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState<'ka' | 'en'>('ka');
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const router = useRouter();
 
   // Translation hook
@@ -29,6 +30,10 @@ export default function LoginPage() {
     const savedLanguage =
       (localStorage.getItem('language') as 'ka' | 'en') || 'ka';
     setCurrentLanguage(savedLanguage);
+
+    // Load remember me preference
+    const savedRememberMe = localStorage.getItem('rememberMe') === 'true';
+    setRememberMe(savedRememberMe);
 
     // Check if user is already logged in with Supabase
     const checkAuth = async () => {
@@ -65,6 +70,11 @@ export default function LoginPage() {
       const { data, error } = await supabase.auth.signInWithPassword({
         email: loginEmail,
         password: password,
+        options: {
+          // If "remember me" is checked, session persists across browser restarts
+          // If unchecked, session will be temporary (expires when browser closes)
+          persistSession: rememberMe
+        }
       });
 
       if (error) {
@@ -86,6 +96,15 @@ export default function LoginPage() {
           setError(t('errorWrongCredentials'));
         }
       } else if (data.user) {
+        // Save remember me preference for next time
+        localStorage.setItem('rememberMe', rememberMe.toString());
+        
+        logger.log('✅ Login successful:', {
+          email: data.user.email,
+          rememberMe: rememberMe,
+          sessionPersisted: rememberMe
+        });
+        
         router.push('/');
       }
     } catch (error) {
@@ -215,6 +234,40 @@ export default function LoginPage() {
                 {t('showPassword')}
               </label>
             </div>
+          </div>
+
+          {/* Remember Me Checkbox */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '14px',
+              color: '#7f8c8d',
+              marginTop: '12px',
+            }}
+          >
+            <label
+              style={{
+                cursor: 'pointer',
+                userSelect: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                tabIndex={-1}
+                style={{
+                  cursor: 'pointer',
+                  transform: 'scale(0.9)',
+                }}
+              />
+              {currentLanguage === 'ka' ? 'დამიმახსოვრე' : 'Remember me'}
+            </label>
           </div>
 
           {error && (
