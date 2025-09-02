@@ -19,6 +19,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState<'ka' | 'en'>('ka');
   const [showPassword, setShowPassword] = useState(false);
@@ -45,6 +46,7 @@ export default function RegisterPage() {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+    setMessage('');
 
     // Validation
     if (
@@ -76,11 +78,33 @@ export default function RegisterPage() {
       // Create supabase client only when needed
       const supabase = getSupabaseClient();
 
+      // Dynamic redirect URL based on environment
+      const getBaseUrl = () => {
+        // Check if running on client side
+        if (typeof window !== 'undefined') {
+          return window.location.origin;
+        }
+        // Server side fallback
+        return process.env.NODE_ENV === 'development' 
+          ? 'http://localhost:3010' 
+          : 'https://task-new-app.vercel.app';
+      };
+      
+      const baseUrl = getBaseUrl();
+      const emailRedirectUrl = `${baseUrl}/auth/confirm`;
+
+      logger.log('🔗 Registration attempt:', {
+        email: email.trim().toLowerCase(),
+        redirectUrl: emailRedirectUrl,
+        environment: process.env.NODE_ENV,
+        baseUrl
+      });
+
       const { data, error } = await supabase.auth.signUp({
         email: email.trim().toLowerCase(),
         password: password,
         options: {
-          emailRedirectTo: 'https://task-new-app.vercel.app/auth/confirm',
+          emailRedirectTo: emailRedirectUrl,
           data: {
             first_name: firstName.trim(),
             last_name: lastName.trim(),
@@ -89,12 +113,19 @@ export default function RegisterPage() {
       });
 
       if (error) {
+        logger.error('❌ Registration error:', error);
         if (error.message.includes('User already registered')) {
           setError(t('errorEmailExists'));
         } else {
           setError(error.message);
         }
       } else if (data.user) {
+        logger.log('✅ User registration successful:', {
+          userId: data.user.id,
+          email: data.user.email,
+          emailConfirmed: data.user.email_confirmed_at,
+          needsEmailConfirmation: !data.session
+        });
         // Create profile using service role to bypass RLS during registration
         try {
           const response = await fetch('/api/create-profile', {
@@ -157,8 +188,21 @@ export default function RegisterPage() {
             router.push('/login');
           }
         } else {
-          // Production or already has session
-          router.push('/login');
+          // Production: Show success message about email confirmation
+          if (!data.session) {
+            // Email confirmation required
+            setError(''); // Clear any errors
+            setMessage(currentLanguage === 'ka' 
+              ? '✅ რეგისტრაცია წარმატებით დასრულდა! გთხოვთ, შეამოწმოთ თქვენი ელ-ფოსტა დადასტურების ბმულისთვის.' 
+              : '✅ Registration successful! Please check your email for a confirmation link.');
+            // Don't redirect immediately, let user read the message
+            setTimeout(() => {
+              router.push('/login');
+            }, 3000);
+          } else {
+            // Already confirmed or auto-confirmed
+            router.push('/');
+          }
         }
       }
     } catch (error) {
@@ -410,6 +454,24 @@ export default function RegisterPage() {
               }}
             >
               ⚠ {error}
+            </div>
+          )}
+
+          {message && (
+            <div
+              style={{
+                background: '#eff8ff',
+                color: '#2563eb',
+                padding: '12px 16px',
+                borderRadius: '8px',
+                fontSize: '14px',
+                border: '1px solid #2563eb',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+            >
+              ✉️ {message}
             </div>
           )}
 
